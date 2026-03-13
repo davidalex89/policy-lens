@@ -33,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "policy_file",
         type=Path,
-        help="Path to a text/markdown security policy document.",
+        help="Path to a security policy document (.txt, .md, or .pdf).",
     )
     p.add_argument(
         "-m", "--model",
@@ -89,8 +89,22 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _read_policy(path: Path) -> str:
+    """Read policy text from .txt, .md, or .pdf files."""
+    if path.suffix.lower() == ".pdf":
+        try:
+            from pypdf import PdfReader
+        except ImportError:
+            raise SystemExit(
+                "PDF support requires pypdf. Install it with: pip install pypdf"
+            )
+        reader = PdfReader(path)
+        return "\n\n".join(page.extract_text() or "" for page in reader.pages)
+    return path.read_text()
+
+
 async def _run(args: argparse.Namespace, console: Console) -> AnalysisResult:
-    policy_text = args.policy_file.read_text()
+    policy_text = _read_policy(args.policy_file)
     if not policy_text.strip():
         console.print("[red]Error:[/] Policy file is empty.")
         sys.exit(1)

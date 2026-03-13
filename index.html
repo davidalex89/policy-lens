@@ -412,8 +412,8 @@
   <!-- Policy input -->
   <div class="card">
     <h2><span class="icon">&#128196;</span> Policy Document</h2>
-    <textarea id="policy-text" placeholder="Paste your security policy here, or drag and drop a .txt / .md file..."></textarea>
-    <div class="file-hint">Or: <input type="file" id="file-input" accept=".txt,.md,.text,.pdf"></div>
+    <textarea id="policy-text" placeholder="Paste your security policy here, or drag and drop a .txt, .md, or .pdf file..."></textarea>
+    <div class="file-hint">Or upload: <input type="file" id="file-input" accept=".txt,.md,.text,.pdf"> (supports PDF)</div>
     <div style="margin-top:1rem" class="actions">
       <button class="btn btn-primary" id="run-btn" onclick="runAnalysis()">
         &#9654; Analyze Policy
@@ -737,7 +737,7 @@ function renderResults(statements, mappings, evaluation) {
     ${details}
   `;
 
-  results.scrollIntoView({behavior: 'smooth'});
+  results.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
@@ -823,10 +823,13 @@ function initChat() {
   section.style.display = 'block';
   chatHistory = [];
   document.getElementById('chat-messages').innerHTML = '';
+  document.getElementById('chat-suggestions').style.display = 'flex';
 
   addChatMessage('assistant', `I've reviewed your policy and the NIST 800-53 analysis. Coverage is at ${chatContext.evaluation?.overall_coverage_pct ?? '?'}% — I have thoughts. What would you like to dig into?`);
 
   document.getElementById('prompt-layers-detail').textContent = buildAdvisorSystemPrompt();
+
+  setTimeout(() => section.scrollIntoView({behavior: 'smooth', block: 'center'}), 300);
 }
 
 function addChatMessage(role, text) {
@@ -989,10 +992,61 @@ Version 2.1 | Effective Date: January 1, 2026
     to sensitive information.`;
 }
 
+// ─── PDF Text Extraction ──────────────────────────────────────────────────
+let pdfjsLib = null;
+
+async function loadPdfJs() {
+  if (pdfjsLib) return pdfjsLib;
+  const mod = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.min.mjs');
+  mod.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.mjs';
+  pdfjsLib = mod;
+  return mod;
+}
+
+async function extractTextFromPdf(arrayBuffer) {
+  const lib = await loadPdfJs();
+  const pdf = await lib.getDocument({data: arrayBuffer}).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const lines = [];
+    let lastY = null;
+    for (const item of content.items) {
+      if (lastY !== null && Math.abs(item.transform[5] - lastY) > 2) {
+        lines.push('\n');
+      }
+      lines.push(item.str);
+      lastY = item.transform[5];
+    }
+    pages.push(lines.join(''));
+  }
+  return pages.join('\n\n');
+}
+
+async function handleFile(file) {
+  const ta = document.getElementById('policy-text');
+  if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+    ta.value = 'Extracting text from PDF...';
+    ta.disabled = true;
+    try {
+      const buf = await file.arrayBuffer();
+      ta.value = await extractTextFromPdf(buf);
+    } catch (err) {
+      ta.value = '';
+      alert('Failed to extract text from PDF: ' + err.message);
+    } finally {
+      ta.disabled = false;
+    }
+  } else {
+    ta.value = await file.text();
+  }
+}
+
 // Drag-and-drop / file input
 document.getElementById('file-input').addEventListener('change', e => {
   const file = e.target.files[0];
-  if (file) file.text().then(t => document.getElementById('policy-text').value = t);
+  if (file) handleFile(file);
 });
 const ta = document.getElementById('policy-text');
 ta.addEventListener('dragover', e => { e.preventDefault(); ta.style.borderColor = 'var(--accent)'; });
@@ -1001,7 +1055,7 @@ ta.addEventListener('drop', e => {
   e.preventDefault();
   ta.style.borderColor = '';
   const file = e.dataTransfer.files[0];
-  if (file) file.text().then(t => ta.value = t);
+  if (file) handleFile(file);
 });
 </script>
 </body>
