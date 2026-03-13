@@ -1,0 +1,58 @@
+ACME CORPORATION — INFORMATION SECURITY POLICY
+================================================
+Version 2.1 | Effective Date: January 1, 2026
+
+1. ACCESS CONTROL
+-----------------
+1.1 All users must be assigned a unique identifier before being granted access
+    to any information system.
+1.2 Access to systems and data shall be granted based on the principle of least
+    privilege. Users shall only receive the minimum permissions necessary to
+    perform their job functions.
+1.3 Multi-factor authentication (MFA) is required for all remote access and
+    for access to systems containing sensitive data.
+1.4 User accounts that have been inactive for more than 90 days shall be
+    automatically disabled.
+1.5 All privileged (administrator) access shall require a separate, dedicated
+    account and shall be logged and reviewed quarterly.
+
+2. INCIDENT RESPONSE
+--------------------
+2.1 The organization shall maintain an incident response plan that is reviewed
+    and tested annually.
+2.2 All employees must report suspected security incidents to the Security
+    Operations Center (SOC) within 1 hour of discovery.
+2.3 A post-incident review shall be conducted within 5 business days of
+    incident closure to identify lessons learned and remediation actions.
+
+3. DATA PROTECTION
+------------------
+3.1 Data at rest classified as Confidential or higher must be encrypted using
+    AES-256 or equivalent.
+3.2 Data in transit must be protected using TLS 1.2 or higher.
+3.3 Removable media containing sensitive data must be encrypted and tracked
+    in a media inventory log.
+
+4. AUDIT AND LOGGING
+--------------------
+4.1 All information systems shall generate audit logs that capture, at a
+    minimum: user ID, timestamp, event type, and success/failure indication.
+4.2 Audit logs shall be retained for a minimum of one year.
+4.3 Logs shall be reviewed weekly for anomalous activity by the security team.
+
+5. CHANGE MANAGEMENT
+--------------------
+5.1 All changes to production systems must follow a documented change
+    management process that includes request, review, approval, testing,
+    and rollback procedures.
+5.2 Emergency changes are permitted but must be documented and reviewed
+    within 48 hours.
+
+6. PERSONNEL SECURITY
+---------------------
+6.1 Background checks shall be conducted on all employees and contractors
+    prior to granting system access.
+6.2 Upon termination, all system access shall be revoked within 24 hours
+    and company-owned equipment returned.
+6.3 Non-disclosure agreements are required for all personnel with access
+    to sensitive information.

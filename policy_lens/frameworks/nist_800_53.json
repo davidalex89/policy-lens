@@ -1,0 +1,127 @@
+{
+  "framework": "NIST SP 800-53 Rev. 5",
+  "source": "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final",
+  "description": "Security and Privacy Controls for Information Systems and Organizations",
+  "control_families": [
+    {
+      "id": "AC",
+      "name": "Access Control",
+      "description": "Policy and procedures for limiting system access to authorized users, processes, or devices, and to authorized types of transactions and functions.",
+      "example_controls": ["AC-1 Policy and Procedures", "AC-2 Account Management", "AC-3 Access Enforcement", "AC-6 Least Privilege", "AC-7 Unsuccessful Logon Attempts"]
+    },
+    {
+      "id": "AT",
+      "name": "Awareness and Training",
+      "description": "Policy and procedures for ensuring personnel are adequately trained to carry out their assigned security responsibilities.",
+      "example_controls": ["AT-1 Policy and Procedures", "AT-2 Literacy Training and Awareness", "AT-3 Role-Based Training"]
+    },
+    {
+      "id": "AU",
+      "name": "Audit and Accountability",
+      "description": "Policy and procedures for creating, protecting, and retaining system audit records to enable monitoring, analysis, investigation, and reporting of unlawful or unauthorized activity.",
+      "example_controls": ["AU-1 Policy and Procedures", "AU-2 Event Logging", "AU-3 Content of Audit Records", "AU-6 Audit Record Review", "AU-9 Protection of Audit Information"]
+    },
+    {
+      "id": "CA",
+      "name": "Assessment, Authorization, and Monitoring",
+      "description": "Policy and procedures for assessing security controls, authorizing system operation, and monitoring controls on an ongoing basis.",
+      "example_controls": ["CA-1 Policy and Procedures", "CA-2 Control Assessments", "CA-5 Plan of Action and Milestones", "CA-7 Continuous Monitoring"]
+    },
+    {
+      "id": "CM",
+      "name": "Configuration Management",
+      "description": "Policy and procedures for establishing and maintaining baseline configurations and inventories of systems throughout their life cycles.",
+      "example_controls": ["CM-1 Policy and Procedures", "CM-2 Baseline Configuration", "CM-3 Configuration Change Control", "CM-6 Configuration Settings", "CM-8 System Component Inventory"]
+    },
+    {
+      "id": "CP",
+      "name": "Contingency Planning",
+      "description": "Policy and procedures for establishing, maintaining, and implementing plans for emergency response, backup operations, and post-disaster recovery.",
+      "example_controls": ["CP-1 Policy and Procedures", "CP-2 Contingency Plan", "CP-4 Contingency Plan Testing", "CP-9 System Backup", "CP-10 System Recovery and Reconstitution"]
+    },
+    {
+      "id": "IA",
+      "name": "Identification and Authentication",
+      "description": "Policy and procedures for identifying and authenticating users, processes, and devices before granting access to systems.",
+      "example_controls": ["IA-1 Policy and Procedures", "IA-2 Identification and Authentication (Organizational Users)", "IA-4 Identifier Management", "IA-5 Authenticator Management", "IA-8 Identification and Authentication (Non-Organizational Users)"]
+    },
+    {
+      "id": "IR",
+      "name": "Incident Response",
+      "description": "Policy and procedures for establishing an operational incident handling capability including preparation, detection, analysis, containment, recovery, and user response activities.",
+      "example_controls": ["IR-1 Policy and Procedures", "IR-2 Incident Response Training", "IR-4 Incident Handling", "IR-5 Incident Monitoring", "IR-6 Incident Reporting"]
+    },
+    {
+      "id": "MA",
+      "name": "Maintenance",
+      "description": "Policy and procedures for performing timely maintenance on systems and ensuring effective controls on maintenance tools, techniques, mechanisms, and personnel.",
+      "example_controls": ["MA-1 Policy and Procedures", "MA-2 Controlled Maintenance", "MA-4 Nonlocal Maintenance", "MA-5 Maintenance Personnel"]
+    },
+    {
+      "id": "MP",
+      "name": "Media Protection",
+      "description": "Policy and procedures for protecting system media, both paper and digital, limiting access, and ensuring proper sanitization or destruction.",
+      "example_controls": ["MP-1 Policy and Procedures", "MP-2 Media Access", "MP-4 Media Storage", "MP-6 Media Sanitization"]
+    },
+    {
+      "id": "PE",
+      "name": "Physical and Environmental Protection",
+      "description": "Policy and procedures for limiting physical access to systems and facilities, and protecting against environmental hazards.",
+      "example_controls": ["PE-1 Policy and Procedures", "PE-2 Physical Access Authorizations", "PE-3 Physical Access Control", "PE-6 Monitoring Physical Access", "PE-13 Fire Protection"]
+    },
+    {
+      "id": "PL",
+      "name": "Planning",
+      "description": "Policy and procedures for developing, documenting, updating, and implementing security and privacy plans for systems.",
+      "example_controls": ["PL-1 Policy and Procedures", "PL-2 System Security and Privacy Plans", "PL-4 Rules of Behavior"]
+    },
+    {
+      "id": "PM",
+      "name": "Program Management",
+      "description": "Controls for managing the organization-wide information security program, including risk management strategy, enterprise architecture, and critical infrastructure plans.",
+      "example_controls": ["PM-1 Information Security Program Plan", "PM-2 Information Security Program Leadership Role", "PM-9 Risk Management Strategy", "PM-11 Mission and Business Process Definition"]
+    },
+    {
+      "id": "PS",
+      "name": "Personnel Security",
+      "description": "Policy and procedures for ensuring individuals occupying positions of responsibility are trustworthy and meet established security criteria.",
+      "example_controls": ["PS-1 Policy and Procedures", "PS-2 Position Risk Designation", "PS-3 Personnel Screening", "PS-4 Personnel Termination", "PS-5 Personnel Transfer"]
+    },
+    {
+      "id": "PT",
+      "name": "PII Processing and Transparency",
+      "description": "Policy and procedures for managing personally identifiable information processing, providing notice, and ensuring transparency.",
+      "example_controls": ["PT-1 Policy and Procedures", "PT-2 Authority to Process PII", "PT-3 PII Processing Purposes", "PT-4 Consent"]
+    },
+    {
+      "id": "RA",
+      "name": "Risk Assessment",
+      "description": "Policy and procedures for assessing risk to organizational operations, assets, individuals, and other organizations.",
+      "example_controls": ["RA-1 Policy and Procedures", "RA-2 Security Categorization", "RA-3 Risk Assessment", "RA-5 Vulnerability Monitoring and Scanning"]
+    },
+    {
+      "id": "SA",
+      "name": "System and Services Acquisition",
+      "description": "Policy and procedures for allocating resources, managing the system development life cycle, and managing acquisitions and contracts.",
+      "example_controls": ["SA-1 Policy and Procedures", "SA-2 Allocation of Resources", "SA-3 System Development Life Cycle", "SA-4 Acquisition Process", "SA-11 Developer Testing and Evaluation"]
+    },
+    {
+      "id": "SC",
+      "name": "System and Communications Protection",
+      "description": "Policy and procedures for protecting communications at system boundaries, ensuring confidentiality and integrity of transmitted information.",
+      "example_controls": ["SC-1 Policy and Procedures", "SC-7 Boundary Protection", "SC-8 Transmission Confidentiality and Integrity", "SC-12 Cryptographic Key Establishment and Management", "SC-13 Cryptographic Protection"]
+    },
+    {
+      "id": "SI",
+      "name": "System and Information Integrity",
+      "description": "Policy and procedures for identifying, reporting, and correcting system flaws, protecting against malicious code, and monitoring system security alerts.",
+      "example_controls": ["SI-1 Policy and Procedures", "SI-2 Flaw Remediation", "SI-3 Malicious Code Protection", "SI-4 System Monitoring", "SI-5 Security Alerts, Advisories, and Directives"]
+    },
+    {
+      "id": "SR",
+      "name": "Supply Chain Risk Management",
+      "description": "Policy and procedures for managing supply chain risks associated with the development, acquisition, maintenance, and disposal of systems and components.",
+      "example_controls": ["SR-1 Policy and Procedures", "SR-2 Supply Chain Risk Management Plan", "SR-3 Supply Chain Controls and Processes", "SR-5 Acquisition Strategies, Tools, and Methods"]
+    }
+  ]
+}
