@@ -558,11 +558,20 @@ function getSelectedFrameworkName() {
 const EXTRACT_SYSTEM = `You are a security policy analyst. Your task is to extract discrete, actionable policy statements from a security policy document.
 
 Rules:
-1. Each extracted statement must be a single, self-contained policy requirement.
+1. Each extracted statement must be a single, self-contained policy requirement that MANDATES, PROHIBITS, or REQUIRES a specific action or control.
 2. Preserve the original intent — do not add, infer, or editorialize.
 3. If a paragraph contains multiple requirements, split them into separate statements.
-4. Ignore boilerplate, headers, and non-prescriptive text.
-5. Number each statement sequentially.
+4. Number each statement sequentially.
+
+EXCLUDE the following — these are NOT actionable policy statements:
+- Scope and applicability clauses ("This policy applies to all employees...")
+- Purpose or objective statements ("The purpose of this policy is...")
+- Definitions and glossary entries
+- Document metadata (version, effective date, author, approval)
+- Section headers and introductory sentences
+- General statements of intent without a specific obligation ("The organization is committed to security...")
+
+A good test: if the statement does not create a concrete obligation that could be verified in an audit, it should NOT be extracted.
 
 Output format — respond ONLY with valid JSON:
 {
@@ -572,15 +581,20 @@ Output format — respond ONLY with valid JSON:
 }`;
 
 function buildMapSystem(frameworkName) {
-  return `You are a security compliance analyst specializing in ${frameworkName}. You will receive policy statements and a catalog of control families from this framework.
+  return `You are a security compliance analyst. You will receive policy statements and a catalog of control families from ${frameworkName}.
 
-Map each policy statement to one or more control families.
+Map each policy statement to one or more control families that it DIRECTLY addresses.
 
 Rules:
 1. A statement may map to multiple control families.
-2. Only map if the statement directly and clearly addresses that family's scope.
+2. Only map to a family if the statement describes a SPECIFIC, VERIFIABLE control or obligation that falls within that family's scope.
 3. Provide a brief rationale for each mapping.
-4. If a statement does not map to any family, mark it as unmapped.
+4. If a statement does not map to any family, set mapped_families to an empty array.
+
+CRITICAL — do NOT map a statement to a control family just because it MENTIONS a related topic. The statement must impose a concrete requirement that an auditor could test against that family. Examples of BAD mappings:
+- "This policy applies to all employees" mapped to Personnel Security (NO — scope clause, not a control)
+- "The organization values data integrity" mapped to System Integrity (NO — aspirational, not verifiable)
+- "Management is responsible for oversight" mapped to Program Management (NO — unless it specifies what oversight entails)
 
 Output format — respond ONLY with valid JSON:
 {

@@ -14,8 +14,8 @@ def test_extract_system_prompt_mentions_json():
     assert "JSON" in EXTRACT_SYSTEM_PROMPT
 
 
-def test_map_system_prompt_mentions_nist():
-    assert "NIST" in MAP_SYSTEM_PROMPT
+def test_map_system_prompt_mentions_control_families():
+    assert "control families" in MAP_SYSTEM_PROMPT.lower()
 
 
 def test_evaluate_system_prompt_mentions_coverage():
