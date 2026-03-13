@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>policy-lens — Security Policy Assessment</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <style>
   :root {
     --navy: #17253f;
@@ -1115,8 +1114,30 @@ Version 2.1 | Effective Date: January 1, 2026
 }
 
 // ─── PDF Export ───────────────────────────────────────────────────────────
-function exportPDF() {
-  const { jsPDF } = window.jspdf;
+async function loadJsPDF() {
+  if (window.jspdf) return window.jspdf.jsPDF;
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+    s.onload = () => resolve(window.jspdf.jsPDF);
+    s.onerror = () => reject(new Error('Failed to load jsPDF library'));
+    document.head.appendChild(s);
+  });
+}
+
+async function exportPDF() {
+  const btn = document.getElementById('export-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  let jsPDF;
+  try {
+    jsPDF = await loadJsPDF();
+  } catch (err) {
+    alert('Could not load PDF library. Check your internet connection.');
+    btn.disabled = false;
+    btn.innerHTML = '&#128196; Export PDF';
+    return;
+  }
   const doc = new jsPDF({unit: 'mm', format: 'a4'});
   const pw = 190; // usable page width
   const lm = 10;  // left margin
@@ -1311,6 +1332,8 @@ function exportPDF() {
 
   addFooter();
   doc.save(`policy-lens-${fw.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.pdf`);
+  btn.disabled = false;
+  btn.innerHTML = '&#128196; Export PDF';
 }
 
 // ─── PDF Text Extraction ──────────────────────────────────────────────────
