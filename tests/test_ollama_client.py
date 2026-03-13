@@ -32,3 +32,16 @@ def test_extract_json_with_whitespace():
     raw = "  \n  {\"a\": 1}  \n  "
     result = _extract_json(raw)
     assert result["a"] == 1
+
+
+def test_extract_json_with_trailing_commas():
+    raw = '{"items": [1, 2, 3,], "key": "value",}'
+    result = _extract_json(raw)
+    assert result["items"] == [1, 2, 3]
+    assert result["key"] == "value"
+
+
+def test_extract_json_nested_with_trailing_comma():
+    raw = '{"scores": [{"id": "AC", "score": "addressed",},]}'
+    result = _extract_json(raw)
+    assert result["scores"][0]["id"] == "AC"

@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 
 import httpx
+
+
+MAX_RETRIES = 2
 
 
 @dataclass
@@ -24,6 +28,7 @@ async def chat(
     config: OllamaConfig,
     system_prompt: str,
     user_prompt: str,
+    force_json: bool = False,
 ) -> str:
     """Send a chat completion request and return the assistant's response text."""
     payload = {
@@ -37,6 +42,8 @@ async def chat(
             "temperature": config.temperature,
         },
     }
+    if force_json:
+        payload["format"] = "json"
 
     async with httpx.AsyncClient(
         base_url=config.base_url,
@@ -65,13 +72,21 @@ async def chat_json(
     system_prompt: str,
     user_prompt: str,
 ) -> dict:
-    """Send a chat request and parse the response as JSON.
+    """Send a chat request with JSON mode enabled and parse the response.
 
-    Attempts to extract JSON from the response even if the model wraps it
-    in markdown fences or preamble text.
+    Uses Ollama's native format:"json" to constrain output, with retry
+    and fallback extraction if needed.
     """
-    raw = await chat(config, system_prompt, user_prompt)
-    return _extract_json(raw)
+    last_err = None
+    for attempt in range(MAX_RETRIES + 1):
+        raw = await chat(config, system_prompt, user_prompt, force_json=True)
+        try:
+            return _extract_json(raw)
+        except OllamaError as exc:
+            last_err = exc
+            if attempt < MAX_RETRIES:
+                continue
+    raise last_err  # type: ignore[misc]
 
 
 def _extract_json(text: str) -> dict:
@@ -84,22 +99,34 @@ def _extract_json(text: str) -> dict:
         lines = [l for l in lines if not l.strip().startswith("```")]
         text = "\n".join(lines).strip()
 
-    # Try direct parse first
+    # Try direct parse
     try:
         return json.loads(text)
     except json.JSONDecodeError:
         pass
 
-    # Find the first { ... } block
+    # Find the outermost { ... } block
     start = text.find("{")
     end = text.rfind("}")
     if start != -1 and end != -1 and end > start:
+        candidate = text[start : end + 1]
         try:
-            return json.loads(text[start : end + 1])
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            pass
+        # Try fixing trailing commas (common with small models)
+        cleaned = _fix_trailing_commas(candidate)
+        try:
+            return json.loads(cleaned)
         except json.JSONDecodeError:
             pass
 
     raise OllamaError(
-        "Could not parse JSON from model response. "
-        "Try a more capable model or re-run. Raw response:\n" + text[:500]
+        "Could not parse JSON from model response after retries. "
+        "Raw response:\n" + text[:1000]
     )
+
+
+def _fix_trailing_commas(text: str) -> str:
+    """Remove trailing commas before } or ] which small models sometimes emit."""
+    return re.sub(r",\s*([}\]])", r"\1", text)
