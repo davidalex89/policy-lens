@@ -9,13 +9,13 @@ Evaluate security policies against NIST 800-53 using layered LLM prompts via [Ol
 The analysis pipeline chains three specialized system prompts, where each layer's structured output feeds the next:
 
 ```
-┌─────────────────────┐     ┌──────────────────────┐     ┌─────────────────────┐
+┌─────────────────────┐     ┌─────────────────-─────┐     ┌─────────────────────┐
 │  Layer 1: Extract   │────▶│   Layer 2: Map        │────▶│  Layer 3: Evaluate  │
 │                     │     │                       │     │                     │
 │  Parse policy into  │     │  Map each statement   │     │  Score coverage per │
 │  discrete statements│     │  to NIST 800-53       │     │  control family,    │
 │                     │     │  control families     │     │  identify gaps      │
-└─────────────────────┘     └──────────────────────┘     └─────────────────────┘
+└─────────────────────┘     └──────────────────-────┘     └─────────────────────┘
 ```
 
 1. **Extract** — Parses the policy document into discrete, actionable policy statements.
