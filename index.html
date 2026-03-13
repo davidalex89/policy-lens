@@ -1118,9 +1118,9 @@ async function loadJsPDF() {
   if (window.jspdf) return window.jspdf.jsPDF;
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+    s.src = 'jspdf.min.js';
     s.onload = () => resolve(window.jspdf.jsPDF);
-    s.onerror = () => reject(new Error('Failed to load jsPDF library'));
+    s.onerror = () => reject(new Error('Failed to load jsPDF. Make sure jspdf.min.js is in the same folder as index.html.'));
     document.head.appendChild(s);
   });
 }
