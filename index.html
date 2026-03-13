@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>policy-lens — Security Policy Assessment</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <style>
   :root {
     --navy: #17253f;
@@ -378,13 +379,6 @@
     border: 1px solid var(--border);
   }
 
-  /* Print styles */
-  @media print {
-    body { background: white; }
-    .card { box-shadow: none; break-inside: avoid; }
-    .btn, #config-card, .pipeline, #chat-section { display: none !important; }
-    #results { display: block !important; }
-  }
 </style>
 </head>
 <body>
@@ -430,8 +424,8 @@
         &#9654; Analyze Policy
       </button>
       <button class="btn btn-secondary" onclick="loadSample()">Load Sample Policy</button>
-      <button class="btn btn-secondary" id="print-btn" style="display:none" onclick="window.print()">
-        &#128424; Print / Save PDF
+      <button class="btn btn-secondary" id="export-btn" style="display:none" onclick="exportPDF()">
+        &#128196; Export PDF
       </button>
     </div>
 
@@ -703,7 +697,7 @@ async function runAnalysis() {
   const btn = document.getElementById('run-btn');
   btn.disabled = true;
   document.getElementById('results').style.display = 'none';
-  document.getElementById('print-btn').style.display = 'none';
+  document.getElementById('export-btn').style.display = 'none';
   const pipeline = document.getElementById('pipeline');
   pipeline.style.display = 'block';
   [1,2,3].forEach(n => setLayer(n, 'pending', ''));
@@ -751,7 +745,7 @@ async function runAnalysis() {
   renderResults(statements, mappings, evaluation);
   initChat();
   btn.disabled = false;
-  document.getElementById('print-btn').style.display = '';
+  document.getElementById('export-btn').style.display = '';
 }
 
 // ─── Fix Coverage Stats ───────────────────────────────────────────────────
@@ -1118,6 +1112,205 @@ Version 2.1 | Effective Date: January 1, 2026
     and company-owned equipment returned.
 6.3 Non-disclosure agreements are required for all personnel with access
     to sensitive information.`;
+}
+
+// ─── PDF Export ───────────────────────────────────────────────────────────
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit: 'mm', format: 'a4'});
+  const pw = 190; // usable page width
+  const lm = 10;  // left margin
+  let y = 0;
+
+  const NAVY = [23, 37, 63];
+  const STEEL = [70, 90, 120];
+  const WHITE = [255, 255, 255];
+  const GREEN = [22, 163, 74];
+  const YELLOW = [180, 130, 0];
+  const RED = [220, 38, 38];
+  const LIGHT = [240, 242, 245];
+  const SCORE_C = {addressed: GREEN, partial: YELLOW, none: RED};
+  const SCORE_L = {addressed: 'Addressed', partial: 'Partial', none: 'Not Covered'};
+
+  const ev = chatContext.evaluation || {};
+  const mappings = chatContext.mappings || {};
+  const statements = chatContext.statements || {};
+  const fw = getSelectedFrameworkName();
+  const model = document.getElementById('model').value;
+  const pct = ev.overall_coverage_pct ?? '?';
+
+  function checkPage(need) { if (y + need > 280) { doc.addPage(); y = 20; } }
+  function textLines(text, maxW) { return doc.splitTextToSize(text, maxW); }
+
+  // ── Title page ──────────────────────────────────────────────────────
+  y = 80;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(26);
+  doc.setTextColor(...NAVY);
+  doc.text('Security Policy Assessment', 105, y, {align: 'center'});
+  y += 12;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.setTextColor(...STEEL);
+  doc.text(`Framework: ${fw}`, 105, y, {align: 'center'}); y += 7;
+  doc.text(`Model: ${model}`, 105, y, {align: 'center'}); y += 7;
+  doc.text(`Generated: ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}`, 105, y, {align: 'center'});
+  y += 25;
+  const pctC = typeof pct === 'number' ? (pct >= 70 ? GREEN : pct >= 40 ? YELLOW : RED) : STEEL;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(52);
+  doc.setTextColor(...pctC);
+  doc.text(`${pct}%`, 105, y, {align: 'center'});
+  y += 10;
+  doc.setFontSize(13);
+  doc.setTextColor(...STEEL);
+  doc.text('Overall Coverage', 105, y, {align: 'center'});
+
+  // ── Footer helper ───────────────────────────────────────────────────
+  function addFooter() {
+    const pages = doc.internal.getNumberOfPages();
+    for (let i = 2; i <= pages; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(7);
+      doc.setTextColor(...STEEL);
+      doc.text(`policy-lens  |  ${fw}  |  Page ${i}`, 105, 290, {align: 'center'});
+    }
+  }
+
+  // ── Executive Summary ───────────────────────────────────────────────
+  doc.addPage(); y = 20;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(...NAVY);
+  doc.text('Executive Summary', lm, y); y += 2;
+  doc.setDrawColor(...NAVY); doc.line(lm, y, lm + pw, y); y += 8;
+
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...NAVY);
+  const sumLines = textLines(ev.executive_summary || 'No summary available.', pw);
+  doc.text(sumLines, lm, y); y += sumLines.length * 5 + 6;
+
+  const stats = [
+    ['Total Families', String(ev.total_families ?? '?'), NAVY],
+    ['Addressed', String(ev.families_addressed ?? '?'), GREEN],
+    ['Partial', String(ev.families_partial ?? '?'), YELLOW],
+    ['Not Covered', String(ev.families_none ?? '?'), RED],
+  ];
+  for (const [label, val, col] of stats) {
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...STEEL);
+    doc.text(`${label}:`, lm, y);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...col);
+    doc.text(val, lm + 40, y);
+    y += 6;
+  }
+  y += 6;
+
+  // ── Coverage Table ──────────────────────────────────────────────────
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(...NAVY);
+  doc.text('Coverage by Control Family', lm, y); y += 2;
+  doc.setDrawColor(...NAVY); doc.line(lm, y, lm + pw, y); y += 6;
+
+  const cols = [15, 60, 25, 90];
+  const headers = ['ID', 'Family', 'Score', 'Recommendation'];
+  doc.setFillColor(...NAVY); doc.rect(lm, y - 4, pw, 7, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...WHITE);
+  let cx = lm + 2;
+  for (let i = 0; i < headers.length; i++) { doc.text(headers[i], cx, y); cx += cols[i]; }
+  y += 5;
+
+  doc.setFontSize(8);
+  for (let i = 0; i < (ev.family_scores || []).length; i++) {
+    const fs = ev.family_scores[i];
+    checkPage(8);
+    if (i % 2 === 0) { doc.setFillColor(...LIGHT); doc.rect(lm, y - 3.5, pw, 5.5, 'F'); }
+    cx = lm + 2;
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...NAVY);
+    doc.text(fs.family_id, cx, y); cx += cols[0];
+    doc.setFont('helvetica', 'normal');
+    doc.text(fs.family_name.substring(0, 35), cx, y); cx += cols[1];
+    doc.setTextColor(...(SCORE_C[fs.score] || NAVY));
+    doc.setFont('helvetica', 'bold');
+    doc.text(SCORE_L[fs.score] || fs.score, cx, y); cx += cols[2];
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(...STEEL);
+    const rec = fs.recommendation || '-';
+    doc.text(rec.substring(0, 75) + (rec.length > 75 ? '...' : ''), cx, y);
+    y += 5.5;
+  }
+  y += 6;
+
+  // ── Detailed Findings ───────────────────────────────────────────────
+  checkPage(20);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(...NAVY);
+  doc.text('Detailed Findings', lm, y); y += 2;
+  doc.setDrawColor(...NAVY); doc.line(lm, y, lm + pw, y); y += 8;
+
+  const mapByFamily = {};
+  for (const m of (mappings.mappings || [])) {
+    for (const fam of (m.mapped_families || [])) {
+      if (!mapByFamily[fam.family_id]) mapByFamily[fam.family_id] = [];
+      mapByFamily[fam.family_id].push({id: m.statement_id, text: m.statement_text, rationale: fam.rationale});
+    }
+  }
+
+  for (const fs of (ev.family_scores || [])) {
+    checkPage(20);
+    const color = SCORE_C[fs.score] || STEEL;
+    doc.setFillColor(...color);
+    doc.rect(lm, y - 4, pw, 7, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...WHITE);
+    doc.text(`${fs.family_id} -- ${fs.family_name}    [${SCORE_L[fs.score] || fs.score}]`, lm + 2, y);
+    y += 6;
+
+    const mapped = mapByFamily[fs.family_id] || [];
+    if (mapped.length) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...NAVY);
+      doc.text('Mapped Policy Statements:', lm + 2, y); y += 4;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      for (const entry of mapped) {
+        checkPage(12);
+        doc.setTextColor(...NAVY);
+        const bLines = textLines(`[${entry.id}] ${entry.text}`, pw - 8);
+        doc.text(bLines, lm + 4, y); y += bLines.length * 3.5;
+        if (entry.rationale) {
+          doc.setTextColor(...STEEL); doc.setFont('helvetica', 'italic');
+          const rLines = textLines(entry.rationale, pw - 12);
+          doc.text(rLines, lm + 8, y); y += rLines.length * 3.5;
+          doc.setFont('helvetica', 'normal');
+        }
+        y += 1;
+      }
+    } else {
+      doc.setFontSize(8); doc.setTextColor(...STEEL);
+      doc.text('No policy statements mapped to this family.', lm + 2, y); y += 4;
+    }
+
+    if (fs.recommendation) {
+      checkPage(10);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...RED);
+      doc.text('Recommendation:', lm + 2, y); y += 4;
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(...NAVY);
+      const recLines = textLines(fs.recommendation, pw - 6);
+      doc.text(recLines, lm + 4, y); y += recLines.length * 3.5;
+    }
+    y += 6;
+  }
+
+  // ── Appendix ────────────────────────────────────────────────────────
+  doc.addPage(); y = 20;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(...NAVY);
+  doc.text('Appendix: Extracted Policy Statements', lm, y); y += 2;
+  doc.setDrawColor(...NAVY); doc.line(lm, y, lm + pw, y); y += 8;
+
+  for (const stmt of (statements.statements || [])) {
+    checkPage(14);
+    const section = stmt.section || 'General';
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...NAVY);
+    doc.text(`[${stmt.id}]  (${section})`, lm, y); y += 4;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    const sLines = textLines(stmt.text, pw - 4);
+    doc.text(sLines, lm + 2, y); y += sLines.length * 3.5 + 3;
+  }
+
+  addFooter();
+  doc.save(`policy-lens-${fw.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.pdf`);
 }
 
 // ─── PDF Text Extraction ──────────────────────────────────────────────────
