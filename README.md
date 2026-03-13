@@ -24,6 +24,23 @@ The analysis pipeline chains three specialized system prompts, where each layer'
 
 All inference runs **locally** via Ollama — no data leaves your machine.
 
+## Web UI (No Server Required)
+
+`policy-lens` includes a **single-file web interface** that runs entirely in your browser — no web server, no backend, no build step. It calls Ollama's local API directly via `fetch()`.
+
+```bash
+# Just open the file
+open index.html
+```
+
+The web UI provides:
+- Interactive three-layer pipeline with live progress
+- Paste or drag-and-drop policy documents
+- Full coverage report with detailed findings
+- Print / Save as PDF via the browser
+
+> Since Ollama runs on `localhost:11434` with CORS support, the browser can call it directly. All data stays local.
+
 ## Prerequisites
 
 - **Python 3.10+**
@@ -149,6 +166,7 @@ policy-lens/
 ├── examples/
 │   └── sample_policy.txt     # Example policy for testing
 ├── tests/
+├── index.html                # Self-contained web UI (no server needed)
 ├── pyproject.toml
 ├── LICENSE                   # Apache 2.0
 └── README.md

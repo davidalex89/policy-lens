@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>policy-lens — Security Policy Assessment</title>
+<style>
+  :root {
+    --navy: #17253f;
+    --steel: #46587a;
+    --accent: #3b82f6;
+    --accent-dark: #2563eb;
+    --green: #16a34a;
+    --yellow: #ca8a04;
+    --red: #dc2626;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+    line-height: 1.6;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Header */
+  header { text-align: center; margin-bottom: 2.5rem; }
+  header h1 { font-size: 1.75rem; font-weight: 700; }
+  header h1 span { color: var(--accent); }
+  header p { color: var(--steel); margin-top: .25rem; font-size: .95rem; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .card h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .card h2 .icon { font-size: 1.2rem; }
+
+  /* Form */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  label { display: block; font-size: .85rem; font-weight: 500; color: var(--steel); margin-bottom: .25rem; }
+  input, select {
+    width: 100%;
+    padding: .5rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: .9rem;
+    background: var(--bg);
+    color: var(--navy);
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+  }
+  textarea {
+    width: 100%;
+    min-height: 220px;
+    padding: .75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: .85rem;
+    resize: vertical;
+    background: var(--bg);
+    color: var(--navy);
+    line-height: 1.5;
+  }
+  .file-hint {
+    font-size: .8rem;
+    color: var(--steel);
+    margin-top: .5rem;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .65rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-primary:disabled { background: var(--steel); cursor: not-allowed; opacity: .6; }
+  .btn-secondary { background: var(--bg); color: var(--navy); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .actions { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+
+  /* Pipeline status */
+  .pipeline { margin-top: 1.5rem; }
+  .layer {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: .9rem;
+  }
+  .layer:last-child { border-bottom: none; }
+  .layer-status {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .layer-status.pending { background: var(--bg); color: var(--steel); border: 2px solid var(--border); }
+  .layer-status.running { background: var(--accent); color: white; animation: pulse 1.2s infinite; }
+  .layer-status.done { background: var(--green); color: white; }
+  .layer-status.error { background: var(--red); color: white; }
+  .layer-label { font-weight: 500; }
+  .layer-detail { color: var(--steel); font-size: .8rem; margin-left: auto; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+
+  /* Results */
+  #results { display: none; }
+  .score-hero {
+    text-align: center;
+    padding: 2rem 0;
+  }
+  .score-hero .pct {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .score-hero .pct-label {
+    font-size: .95rem;
+    color: var(--steel);
+    margin-top: .25rem;
+  }
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1rem 0 .5rem;
+    flex-wrap: wrap;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-value { font-size: 1.5rem; font-weight: 700; }
+  .stat-label { font-size: .8rem; color: var(--steel); }
+  .stat-green .stat-value { color: var(--green); }
+  .stat-yellow .stat-value { color: var(--yellow); }
+  .stat-red .stat-value { color: var(--red); }
+
+  .summary-text {
+    background: var(--bg);
+    border-left: 3px solid var(--accent);
+    padding: .75rem 1rem;
+    margin: 1rem 0;
+    font-size: .95rem;
+    color: var(--navy);
+  }
+
+  /* Family table */
+  .family-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+  }
+  .family-table th {
+    text-align: left;
+    padding: .6rem .75rem;
+    background: var(--navy);
+    color: white;
+    font-weight: 600;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+  .family-table td {
+    padding: .55rem .75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .family-table tr:nth-child(even) { background: #f1f5f9; }
+  .family-table .badge {
+    display: inline-block;
+    padding: .15rem .5rem;
+    border-radius: 4px;
+    font-size: .78rem;
+    font-weight: 600;
+    color: white;
+  }
+  .badge-addressed { background: var(--green); }
+  .badge-partial { background: var(--yellow); }
+  .badge-none { background: var(--red); }
+
+  /* Detail cards */
+  .family-detail {
+    border-left: 4px solid var(--border);
+    padding: .75rem 1rem;
+    margin-bottom: 1rem;
+    background: var(--bg);
+    border-radius: 0 6px 6px 0;
+  }
+  .family-detail.score-addressed { border-left-color: var(--green); }
+  .family-detail.score-partial { border-left-color: var(--yellow); }
+  .family-detail.score-none { border-left-color: var(--red); }
+  .family-detail h3 {
+    font-size: .95rem;
+    font-weight: 600;
+    margin-bottom: .5rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .family-detail .stmt {
+    font-size: .85rem;
+    padding: .3rem 0;
+    color: var(--navy);
+  }
+  .family-detail .rationale {
+    font-size: .8rem;
+    color: var(--steel);
+    font-style: italic;
+    margin-left: 1rem;
+    margin-bottom: .25rem;
+  }
+  .family-detail .recommendation {
+    margin-top: .5rem;
+    padding: .5rem .75rem;
+    background: #fef2f2;
+    border-radius: 4px;
+    font-size: .85rem;
+    color: var(--red);
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: white; }
+    .card { box-shadow: none; break-inside: avoid; }
+    .btn, #config-card, .pipeline { display: none !important; }
+    #results { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1><span>policy-lens</span></h1>
+    <p>Evaluate security policies against NIST 800-53 using layered LLM prompts via Ollama</p>
+  </header>
+
+  <!-- Config -->
+  <div class="card" id="config-card">
+    <h2><span class="icon">&#9881;</span> Configuration</h2>
+    <div class="form-row">
+      <div>
+        <label for="ollama-url">Ollama URL</label>
+        <input type="text" id="ollama-url" value="http://localhost:11434">
+      </div>
+      <div>
+        <label for="model">Model</label>
+        <input type="text" id="model" value="llama3.2">
+      </div>
+    </div>
+  </div>
+
+  <!-- Policy input -->
+  <div class="card">
+    <h2><span class="icon">&#128196;</span> Policy Document</h2>
+    <textarea id="policy-text" placeholder="Paste your security policy here, or drag and drop a .txt / .md file..."></textarea>
+    <div class="file-hint">Or: <input type="file" id="file-input" accept=".txt,.md,.text,.pdf"></div>
+    <div style="margin-top:1rem" class="actions">
+      <button class="btn btn-primary" id="run-btn" onclick="runAnalysis()">
+        &#9654; Analyze Policy
+      </button>
+      <button class="btn btn-secondary" onclick="loadSample()">Load Sample Policy</button>
+      <button class="btn btn-secondary" id="print-btn" style="display:none" onclick="window.print()">
+        &#128424; Print / Save PDF
+      </button>
+    </div>
+
+    <!-- Pipeline status -->
+    <div class="pipeline" id="pipeline" style="display:none">
+      <div class="layer" id="layer-1">
+        <div class="layer-status pending" id="l1-status">1</div>
+        <span class="layer-label">Extract policy statements</span>
+        <span class="layer-detail" id="l1-detail"></span>
+      </div>
+      <div class="layer" id="layer-2">
+        <div class="layer-status pending" id="l2-status">2</div>
+        <span class="layer-label">Map to NIST 800-53 control families</span>
+        <span class="layer-detail" id="l2-detail"></span>
+      </div>
+      <div class="layer" id="layer-3">
+        <div class="layer-status pending" id="l3-status">3</div>
+        <span class="layer-label">Evaluate coverage &amp; identify gaps</span>
+        <span class="layer-detail" id="l3-detail"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="card" id="summary-card"></div>
+    <div class="card" id="table-card"></div>
+    <div class="card" id="detail-card"></div>
+  </div>
+</div>
+
+<script>
+// ─── NIST 800-53 Control Families (embedded) ──────────────────────────────
+const CONTROL_FAMILIES = [
+  {id:"AC",name:"Access Control",description:"Policy and procedures for limiting system access to authorized users, processes, or devices.",example_controls:["AC-1 Policy and Procedures","AC-2 Account Management","AC-3 Access Enforcement","AC-6 Least Privilege"]},
+  {id:"AT",name:"Awareness and Training",description:"Policy and procedures for ensuring personnel are adequately trained to carry out their assigned security responsibilities.",example_controls:["AT-1 Policy and Procedures","AT-2 Literacy Training and Awareness","AT-3 Role-Based Training"]},
+  {id:"AU",name:"Audit and Accountability",description:"Policy and procedures for creating, protecting, and retaining system audit records.",example_controls:["AU-1 Policy and Procedures","AU-2 Event Logging","AU-6 Audit Record Review"]},
+  {id:"CA",name:"Assessment, Authorization, and Monitoring",description:"Policy and procedures for assessing security controls and authorizing system operation.",example_controls:["CA-1 Policy and Procedures","CA-2 Control Assessments","CA-7 Continuous Monitoring"]},
+  {id:"CM",name:"Configuration Management",description:"Policy and procedures for establishing baseline configurations and inventories.",example_controls:["CM-1 Policy and Procedures","CM-2 Baseline Configuration","CM-6 Configuration Settings"]},
+  {id:"CP",name:"Contingency Planning",description:"Policy and procedures for emergency response, backup, and post-disaster recovery.",example_controls:["CP-1 Policy and Procedures","CP-2 Contingency Plan","CP-9 System Backup"]},
+  {id:"IA",name:"Identification and Authentication",description:"Policy and procedures for identifying and authenticating users, processes, and devices.",example_controls:["IA-1 Policy and Procedures","IA-2 Identification and Authentication","IA-5 Authenticator Management"]},
+  {id:"IR",name:"Incident Response",description:"Policy and procedures for incident handling including preparation, detection, containment, and recovery.",example_controls:["IR-1 Policy and Procedures","IR-4 Incident Handling","IR-6 Incident Reporting"]},
+  {id:"MA",name:"Maintenance",description:"Policy and procedures for performing timely maintenance on systems.",example_controls:["MA-1 Policy and Procedures","MA-2 Controlled Maintenance"]},
+  {id:"MP",name:"Media Protection",description:"Policy and procedures for protecting system media and ensuring proper sanitization.",example_controls:["MP-1 Policy and Procedures","MP-6 Media Sanitization"]},
+  {id:"PE",name:"Physical and Environmental Protection",description:"Policy and procedures for limiting physical access and protecting against environmental hazards.",example_controls:["PE-1 Policy and Procedures","PE-3 Physical Access Control"]},
+  {id:"PL",name:"Planning",description:"Policy and procedures for developing and implementing security and privacy plans.",example_controls:["PL-1 Policy and Procedures","PL-2 System Security Plans"]},
+  {id:"PM",name:"Program Management",description:"Controls for managing the organization-wide information security program.",example_controls:["PM-1 Information Security Program Plan","PM-9 Risk Management Strategy"]},
+  {id:"PS",name:"Personnel Security",description:"Policy and procedures for ensuring individuals are trustworthy and meet security criteria.",example_controls:["PS-1 Policy and Procedures","PS-3 Personnel Screening","PS-4 Personnel Termination"]},
+  {id:"PT",name:"PII Processing and Transparency",description:"Policy and procedures for managing PII processing and ensuring transparency.",example_controls:["PT-1 Policy and Procedures","PT-3 PII Processing Purposes"]},
+  {id:"RA",name:"Risk Assessment",description:"Policy and procedures for assessing risk to operations, assets, and individuals.",example_controls:["RA-1 Policy and Procedures","RA-3 Risk Assessment","RA-5 Vulnerability Scanning"]},
+  {id:"SA",name:"System and Services Acquisition",description:"Policy and procedures for managing the system development life cycle and acquisitions.",example_controls:["SA-1 Policy and Procedures","SA-4 Acquisition Process"]},
+  {id:"SC",name:"System and Communications Protection",description:"Policy and procedures for protecting communications and ensuring confidentiality and integrity.",example_controls:["SC-1 Policy and Procedures","SC-7 Boundary Protection","SC-13 Cryptographic Protection"]},
+  {id:"SI",name:"System and Information Integrity",description:"Policy and procedures for identifying and correcting system flaws and monitoring alerts.",example_controls:["SI-1 Policy and Procedures","SI-2 Flaw Remediation","SI-4 System Monitoring"]},
+  {id:"SR",name:"Supply Chain Risk Management",description:"Policy and procedures for managing supply chain risks.",example_controls:["SR-1 Policy and Procedures","SR-2 Supply Chain Risk Management Plan"]}
+];
+
+// ─── System Prompts ───────────────────────────────────────────────────────
+const EXTRACT_SYSTEM = `You are a security policy analyst. Your task is to extract discrete, actionable policy statements from a security policy document.
+
+Rules:
+1. Each extracted statement must be a single, self-contained policy requirement.
+2. Preserve the original intent — do not add, infer, or editorialize.
+3. If a paragraph contains multiple requirements, split them into separate statements.
+4. Ignore boilerplate, headers, and non-prescriptive text.
+5. Number each statement sequentially.
+
+Output format — respond ONLY with valid JSON:
+{
+  "statements": [
+    {"id": 1, "text": "The policy statement.", "section": "Section name or null"}
+  ]
+}`;
+
+const MAP_SYSTEM = `You are a security compliance analyst specializing in NIST SP 800-53 Rev. 5. You will receive policy statements and a catalog of NIST 800-53 control families.
+
+Map each policy statement to one or more control families.
+
+Rules:
+1. A statement may map to multiple control families.
+2. Only map if the statement directly and clearly addresses that family's scope.
+3. Provide a brief rationale for each mapping.
+4. If a statement does not map to any family, mark it as unmapped.
+
+Output format — respond ONLY with valid JSON:
+{
+  "mappings": [
+    {
+      "statement_id": 1,
+      "statement_text": "...",
+      "mapped_families": [
+        {"family_id": "AC", "family_name": "Access Control", "rationale": "..."}
+      ]
+    }
+  ]
+}`;
+
+const EVALUATE_SYSTEM = `You are a senior security compliance auditor. Evaluate policy-to-control-family mappings and produce a gap analysis.
+
+Rules:
+1. Score each family: "none", "partial", or "addressed".
+2. For "none" or "partial", provide specific recommendations.
+3. Compute overall coverage: (partial + addressed) / total * 100, rounded.
+
+Output format — respond ONLY with valid JSON:
+{
+  "overall_coverage_pct": 45,
+  "total_families": 20,
+  "families_addressed": 5,
+  "families_partial": 4,
+  "families_none": 11,
+  "family_scores": [
+    {"family_id": "AC", "family_name": "Access Control", "score": "addressed", "mapped_statement_count": 3, "recommendation": null}
+  ],
+  "executive_summary": "Brief 2-3 sentence summary."
+}`;
+
+// ─── Ollama Client ────────────────────────────────────────────────────────
+async function ollamaChat(systemPrompt, userPrompt) {
+  const url = document.getElementById('ollama-url').value.replace(/\/+$/, '');
+  const model = document.getElementById('model').value;
+  const resp = await fetch(`${url}/api/chat`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      model,
+      messages: [
+        {role: 'system', content: systemPrompt},
+        {role: 'user', content: userPrompt}
+      ],
+      stream: false,
+      options: {temperature: 0.1}
+    })
+  });
+  if (!resp.ok) throw new Error(`Ollama error: ${resp.status} ${resp.statusText}`);
+  const data = await resp.json();
+  return data.message.content;
+}
+
+function extractJSON(text) {
+  text = text.trim();
+  if (text.startsWith('```')) {
+    text = text.split('\n').filter(l => !l.trim().startsWith('```')).join('\n').trim();
+  }
+  try { return JSON.parse(text); } catch {}
+  const start = text.indexOf('{'), end = text.lastIndexOf('}');
+  if (start !== -1 && end > start) {
+    try { return JSON.parse(text.slice(start, end + 1)); } catch {}
+  }
+  throw new Error('Could not parse JSON from model response. Try a more capable model.');
+}
+
+async function ollamaChatJSON(systemPrompt, userPrompt) {
+  const raw = await ollamaChat(systemPrompt, userPrompt);
+  return extractJSON(raw);
+}
+
+// ─── Layer Updates ────────────────────────────────────────────────────────
+function setLayer(n, status, detail) {
+  const el = document.getElementById(`l${n}-status`);
+  el.className = 'layer-status ' + status;
+  el.textContent = status === 'done' ? '✓' : status === 'error' ? '✗' : n;
+  if (detail) document.getElementById(`l${n}-detail`).textContent = detail;
+}
+
+// ─── Main Pipeline ────────────────────────────────────────────────────────
+async function runAnalysis() {
+  const policyText = document.getElementById('policy-text').value.trim();
+  if (!policyText) return alert('Please paste or upload a policy document.');
+
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('print-btn').style.display = 'none';
+  const pipeline = document.getElementById('pipeline');
+  pipeline.style.display = 'block';
+  [1,2,3].forEach(n => setLayer(n, 'pending', ''));
+
+  const familiesJSON = JSON.stringify(CONTROL_FAMILIES, null, 2);
+  let statements, mappings, evaluation;
+
+  try {
+    // Layer 1: Extract
+    setLayer(1, 'running', '');
+    const t1 = performance.now();
+    statements = await ollamaChatJSON(EXTRACT_SYSTEM,
+      `Extract all discrete policy statements from the following security policy document.\n\n--- BEGIN POLICY DOCUMENT ---\n${policyText}\n--- END POLICY DOCUMENT ---`
+    );
+    setLayer(1, 'done', `${statements.statements?.length || '?'} statements · ${((performance.now()-t1)/1000).toFixed(1)}s`);
+
+    // Layer 2: Map
+    setLayer(2, 'running', '');
+    const t2 = performance.now();
+    mappings = await ollamaChatJSON(MAP_SYSTEM,
+      `Map each of the following policy statements to NIST 800-53 Rev. 5 control families.\n\n--- POLICY STATEMENTS ---\n${JSON.stringify(statements, null, 2)}\n--- END POLICY STATEMENTS ---\n\n--- NIST 800-53 CONTROL FAMILIES ---\n${familiesJSON}\n--- END CONTROL FAMILIES ---`
+    );
+    setLayer(2, 'done', `${mappings.mappings?.length || '?'} mapped · ${((performance.now()-t2)/1000).toFixed(1)}s`);
+
+    // Layer 3: Evaluate
+    setLayer(3, 'running', '');
+    const t3 = performance.now();
+    evaluation = await ollamaChatJSON(EVALUATE_SYSTEM,
+      `Evaluate the following policy-to-control-family mappings and produce a coverage assessment with gap analysis.\n\n--- MAPPINGS ---\n${JSON.stringify(mappings, null, 2)}\n--- END MAPPINGS ---\n\n--- NIST 800-53 CONTROL FAMILIES (full list for gap detection) ---\n${familiesJSON}\n--- END CONTROL FAMILIES ---`
+    );
+    setLayer(3, 'done', `${evaluation.overall_coverage_pct}% coverage · ${((performance.now()-t3)/1000).toFixed(1)}s`);
+
+  } catch (err) {
+    const running = [1,2,3].find(n => document.getElementById(`l${n}-status`).classList.contains('running'));
+    if (running) setLayer(running, 'error', err.message);
+    btn.disabled = false;
+    return;
+  }
+
+  renderResults(statements, mappings, evaluation);
+  btn.disabled = false;
+  document.getElementById('print-btn').style.display = '';
+}
+
+// ─── Render Results ───────────────────────────────────────────────────────
+function renderResults(statements, mappings, evaluation) {
+  const results = document.getElementById('results');
+  results.style.display = 'block';
+
+  const pct = evaluation.overall_coverage_pct ?? '?';
+  const pctColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+
+  // Summary
+  document.getElementById('summary-card').innerHTML = `
+    <div class="score-hero">
+      <div class="pct" style="color:${pctColor}">${pct}%</div>
+      <div class="pct-label">Overall Coverage</div>
+    </div>
+    <div class="stats">
+      <div class="stat stat-green"><div class="stat-value">${evaluation.families_addressed ?? '?'}</div><div class="stat-label">Addressed</div></div>
+      <div class="stat stat-yellow"><div class="stat-value">${evaluation.families_partial ?? '?'}</div><div class="stat-label">Partial</div></div>
+      <div class="stat stat-red"><div class="stat-value">${evaluation.families_none ?? '?'}</div><div class="stat-label">Not Covered</div></div>
+      <div class="stat"><div class="stat-value">${evaluation.total_families ?? 20}</div><div class="stat-label">Total Families</div></div>
+    </div>
+    <div class="summary-text">${esc(evaluation.executive_summary || 'No summary available.')}</div>
+  `;
+
+  // Table
+  const rows = (evaluation.family_scores || []).map(fs => `
+    <tr>
+      <td><strong>${esc(fs.family_id)}</strong></td>
+      <td>${esc(fs.family_name)}</td>
+      <td><span class="badge badge-${fs.score}">${fs.score === 'none' ? 'Not Covered' : fs.score.charAt(0).toUpperCase() + fs.score.slice(1)}</span></td>
+      <td>${fs.mapped_statement_count ?? '?'}</td>
+      <td style="font-size:.83rem;color:var(--steel)">${fs.recommendation ? esc(fs.recommendation) : '—'}</td>
+    </tr>
+  `).join('');
+  document.getElementById('table-card').innerHTML = `
+    <h2><span class="icon">&#128202;</span> Coverage by Control Family</h2>
+    <div style="overflow-x:auto">
+    <table class="family-table">
+      <thead><tr><th>ID</th><th>Family</th><th>Score</th><th>#</th><th>Recommendation</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    </div>
+  `;
+
+  // Build mapping index
+  const mapByFamily = {};
+  for (const m of (mappings.mappings || [])) {
+    for (const fam of (m.mapped_families || [])) {
+      if (!mapByFamily[fam.family_id]) mapByFamily[fam.family_id] = [];
+      mapByFamily[fam.family_id].push({id: m.statement_id, text: m.statement_text, rationale: fam.rationale});
+    }
+  }
+
+  // Details
+  const details = (evaluation.family_scores || []).map(fs => {
+    const stmts = (mapByFamily[fs.family_id] || []).map(s =>
+      `<div class="stmt">&#8226; <strong>[${s.id}]</strong> ${esc(s.text)}</div>` +
+      (s.rationale ? `<div class="rationale">${esc(s.rationale)}</div>` : '')
+    ).join('');
+    const rec = fs.recommendation
+      ? `<div class="recommendation"><strong>Recommendation:</strong> ${esc(fs.recommendation)}</div>`
+      : '';
+    return `
+      <div class="family-detail score-${fs.score}">
+        <h3><span class="badge badge-${fs.score}" style="font-size:.75rem">${fs.family_id}</span> ${esc(fs.family_name)}</h3>
+        ${stmts || '<div style="font-size:.85rem;color:var(--steel)">No policy statements mapped to this family.</div>'}
+        ${rec}
+      </div>
+    `;
+  }).join('');
+  document.getElementById('detail-card').innerHTML = `
+    <h2><span class="icon">&#128269;</span> Detailed Findings</h2>
+    ${details}
+  `;
+
+  results.scrollIntoView({behavior: 'smooth'});
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+function loadSample() {
+  document.getElementById('policy-text').value = `ACME CORPORATION — INFORMATION SECURITY POLICY
+================================================
+Version 2.1 | Effective Date: January 1, 2026
+
+1. ACCESS CONTROL
+-----------------
+1.1 All users must be assigned a unique identifier before being granted access
+    to any information system.
+1.2 Access to systems and data shall be granted based on the principle of least
+    privilege. Users shall only receive the minimum permissions necessary to
+    perform their job functions.
+1.3 Multi-factor authentication (MFA) is required for all remote access and
+    for access to systems containing sensitive data.
+1.4 User accounts that have been inactive for more than 90 days shall be
+    automatically disabled.
+1.5 All privileged (administrator) access shall require a separate, dedicated
+    account and shall be logged and reviewed quarterly.
+
+2. INCIDENT RESPONSE
+--------------------
+2.1 The organization shall maintain an incident response plan that is reviewed
+    and tested annually.
+2.2 All employees must report suspected security incidents to the Security
+    Operations Center (SOC) within 1 hour of discovery.
+2.3 A post-incident review shall be conducted within 5 business days of
+    incident closure to identify lessons learned and remediation actions.
+
+3. DATA PROTECTION
+------------------
+3.1 Data at rest classified as Confidential or higher must be encrypted using
+    AES-256 or equivalent.
+3.2 Data in transit must be protected using TLS 1.2 or higher.
+3.3 Removable media containing sensitive data must be encrypted and tracked
+    in a media inventory log.
+
+4. AUDIT AND LOGGING
+--------------------
+4.1 All information systems shall generate audit logs that capture, at a
+    minimum: user ID, timestamp, event type, and success/failure indication.
+4.2 Audit logs shall be retained for a minimum of one year.
+4.3 Logs shall be reviewed weekly for anomalous activity by the security team.
+
+5. CHANGE MANAGEMENT
+--------------------
+5.1 All changes to production systems must follow a documented change
+    management process that includes request, review, approval, testing,
+    and rollback procedures.
+5.2 Emergency changes are permitted but must be documented and reviewed
+    within 48 hours.
+
+6. PERSONNEL SECURITY
+---------------------
+6.1 Background checks shall be conducted on all employees and contractors
+    prior to granting system access.
+6.2 Upon termination, all system access shall be revoked within 24 hours
+    and company-owned equipment returned.
+6.3 Non-disclosure agreements are required for all personnel with access
+    to sensitive information.`;
+}
+
+// Drag-and-drop / file input
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) file.text().then(t => document.getElementById('policy-text').value = t);
+});
+const ta = document.getElementById('policy-text');
+ta.addEventListener('dragover', e => { e.preventDefault(); ta.style.borderColor = 'var(--accent)'; });
+ta.addEventListener('dragleave', () => { ta.style.borderColor = ''; });
+ta.addEventListener('drop', e => {
+  e.preventDefault();
+  ta.style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (file) file.text().then(t => ta.value = t);
+});
+</script>
+</body>
+</html>
