@@ -1,0 +1,31 @@
+{
+  "framework": "ISO/IEC 27001:2022 — Annex A Controls",
+  "source": "https://www.iso.org/standard/27001",
+  "description": "Information security controls from ISO/IEC 27001:2022 Annex A, organized by the four themes introduced in the 2022 revision.",
+  "control_families": [
+    {
+      "id": "A5",
+      "name": "Organizational Controls",
+      "description": "Policies, roles, responsibilities, and management direction for information security across the organization, including threat intelligence, asset management, and supplier relationships.",
+      "example_controls": ["A.5.1 Policies for Information Security", "A.5.2 Information Security Roles", "A.5.3 Segregation of Duties", "A.5.4 Management Responsibilities", "A.5.7 Threat Intelligence", "A.5.9 Inventory of Information Assets", "A.5.10 Acceptable Use", "A.5.19 Information Security in Supplier Relationships", "A.5.23 Information Security for Cloud Services", "A.5.29 Information Security During Disruption", "A.5.36 Compliance with Policies"]
+    },
+    {
+      "id": "A6",
+      "name": "People Controls",
+      "description": "Controls related to personnel before, during, and after employment, including screening, awareness, training, disciplinary processes, and responsibilities after termination.",
+      "example_controls": ["A.6.1 Screening", "A.6.2 Terms and Conditions of Employment", "A.6.3 Information Security Awareness, Education and Training", "A.6.4 Disciplinary Process", "A.6.5 Responsibilities After Termination", "A.6.6 Confidentiality or Non-Disclosure Agreements", "A.6.7 Remote Working", "A.6.8 Information Security Event Reporting"]
+    },
+    {
+      "id": "A7",
+      "name": "Physical Controls",
+      "description": "Controls for securing physical premises, equipment, and media including physical entry, office security, monitoring, and protection against environmental threats.",
+      "example_controls": ["A.7.1 Physical Security Perimeters", "A.7.2 Physical Entry", "A.7.3 Securing Offices, Rooms and Facilities", "A.7.4 Physical Security Monitoring", "A.7.5 Protecting Against Physical and Environmental Threats", "A.7.7 Clear Desk and Clear Screen", "A.7.8 Equipment Siting and Protection", "A.7.9 Security of Assets Off-Premises", "A.7.10 Storage Media", "A.7.14 Secure Disposal or Re-Use of Equipment"]
+    },
+    {
+      "id": "A8",
+      "name": "Technological Controls",
+      "description": "Controls for endpoint devices, access rights, authentication, capacity management, malware protection, vulnerability management, logging, network security, cryptography, secure development, and data protection.",
+      "example_controls": ["A.8.1 User Endpoint Devices", "A.8.2 Privileged Access Rights", "A.8.3 Information Access Restriction", "A.8.4 Access to Source Code", "A.8.5 Secure Authentication", "A.8.6 Capacity Management", "A.8.7 Protection Against Malware", "A.8.8 Management of Technical Vulnerabilities", "A.8.9 Configuration Management", "A.8.15 Logging", "A.8.16 Monitoring Activities", "A.8.20 Networks Security", "A.8.21 Security of Network Services", "A.8.24 Use of Cryptography", "A.8.25 Secure Development Life Cycle", "A.8.26 Application Security Requirements", "A.8.28 Secure Coding", "A.8.31 Separation of Development, Test and Production Environments", "A.8.34 Protection of Information Systems During Audit Testing"]
+    }
+  ]
+}

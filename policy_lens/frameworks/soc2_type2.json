@@ -1,0 +1,85 @@
+{
+  "framework": "SOC 2 Type II — Trust Services Criteria (2017, updated 2022)",
+  "source": "https://www.aicpa-cima.com/topic/audit-assurance/audit-and-assurance-greater-than-soc-2",
+  "description": "Trust Services Criteria for Security, Availability, Processing Integrity, Confidentiality, and Privacy used in SOC 2 Type II engagements.",
+  "control_families": [
+    {
+      "id": "CC1",
+      "name": "Control Environment",
+      "description": "The organization demonstrates a commitment to integrity and ethical values, exercises oversight responsibility, establishes structure and authority, demonstrates commitment to competence, and enforces accountability.",
+      "example_controls": ["CC1.1 COSO Principle 1: Integrity and Ethical Values", "CC1.2 Board Oversight", "CC1.3 Management Structure", "CC1.4 Commitment to Competence", "CC1.5 Accountability"]
+    },
+    {
+      "id": "CC2",
+      "name": "Communication and Information",
+      "description": "The organization internally and externally communicates information necessary to support the functioning of internal control, including objectives, responsibilities, and relevant changes.",
+      "example_controls": ["CC2.1 COSO Principle 13: Use of Relevant Information", "CC2.2 Internal Communication", "CC2.3 External Communication"]
+    },
+    {
+      "id": "CC3",
+      "name": "Risk Assessment",
+      "description": "The organization specifies objectives, identifies and analyzes risk, and assesses the potential for fraud or other threats.",
+      "example_controls": ["CC3.1 COSO Principle 6: Specify Objectives", "CC3.2 Identify and Analyze Risk", "CC3.3 Consider Potential for Fraud", "CC3.4 Identify and Assess Changes"]
+    },
+    {
+      "id": "CC4",
+      "name": "Monitoring Activities",
+      "description": "The organization selects, develops, and performs ongoing evaluations to ascertain whether controls are present and functioning, and communicates deficiencies in a timely manner.",
+      "example_controls": ["CC4.1 COSO Principle 16: Ongoing and Separate Evaluations", "CC4.2 Evaluate and Communicate Deficiencies"]
+    },
+    {
+      "id": "CC5",
+      "name": "Control Activities",
+      "description": "The organization selects and develops control activities that mitigate risks, including policies, procedures, IT general controls, and technology-based controls.",
+      "example_controls": ["CC5.1 COSO Principle 10: Select and Develop Control Activities", "CC5.2 Technology General Controls", "CC5.3 Deploy Through Policies and Procedures"]
+    },
+    {
+      "id": "CC6",
+      "name": "Logical and Physical Access Controls",
+      "description": "The organization implements logical and physical access controls to protect information assets, restrict access to authorized users, and manage credentials and authentication.",
+      "example_controls": ["CC6.1 Logical Access Security", "CC6.2 User Registration and Authorization", "CC6.3 Role-Based Access", "CC6.4 Physical Access Restrictions", "CC6.5 Secure Disposal", "CC6.6 Encryption of Data in Transit", "CC6.7 Transmission Integrity", "CC6.8 Controls Against Malware"]
+    },
+    {
+      "id": "CC7",
+      "name": "System Operations",
+      "description": "The organization manages system operations including detection and monitoring of security events, incident response, and recovery procedures.",
+      "example_controls": ["CC7.1 Configuration and Baseline Management", "CC7.2 Monitor for Anomalies and Security Events", "CC7.3 Evaluate Security Events", "CC7.4 Incident Response", "CC7.5 Incident Recovery"]
+    },
+    {
+      "id": "CC8",
+      "name": "Change Management",
+      "description": "The organization authorizes, designs, develops, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures.",
+      "example_controls": ["CC8.1 Authorize, Design, Develop, Test, and Implement Changes"]
+    },
+    {
+      "id": "CC9",
+      "name": "Risk Mitigation",
+      "description": "The organization identifies, selects, and develops risk mitigation activities including vendor management and business continuity.",
+      "example_controls": ["CC9.1 COSO Principle 7: Risk Mitigation", "CC9.2 Vendor and Business Partner Risk"]
+    },
+    {
+      "id": "A1",
+      "name": "Availability",
+      "description": "The organization maintains, monitors, and evaluates processing capacity, environmental protections, backup, and recovery to meet availability commitments and requirements.",
+      "example_controls": ["A1.1 Maintain Processing Capacity", "A1.2 Environmental Protections", "A1.3 Recovery Plan and Testing"]
+    },
+    {
+      "id": "PI1",
+      "name": "Processing Integrity",
+      "description": "The organization uses processing integrity controls to ensure system processing is complete, valid, accurate, timely, and authorized.",
+      "example_controls": ["PI1.1 Input Accuracy and Completeness", "PI1.2 Processing Accuracy", "PI1.3 Output Completeness", "PI1.4 Processing Integrity Error Handling", "PI1.5 Processing Integrity Inputs and Outputs"]
+    },
+    {
+      "id": "C1",
+      "name": "Confidentiality",
+      "description": "The organization identifies, classifies, and protects confidential information through its lifecycle, including retention and secure disposal.",
+      "example_controls": ["C1.1 Identify and Classify Confidential Information", "C1.2 Dispose of Confidential Information"]
+    },
+    {
+      "id": "P1",
+      "name": "Privacy",
+      "description": "The organization provides notice, obtains consent, collects only necessary personal information, and manages retention, disposal, disclosure, and access to personal information.",
+      "example_controls": ["P1.1 Privacy Notice", "P1.2 Choice and Consent", "P1.3 Collection Limitation", "P1.4 Use, Retention, and Disposal", "P1.5 Access to Personal Information", "P1.6 Disclosure to Third Parties", "P1.7 Quality of Personal Information", "P1.8 Monitoring and Enforcement"]
+    }
+  ]
+}
