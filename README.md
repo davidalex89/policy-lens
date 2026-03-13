@@ -71,6 +71,7 @@ policy-lens [-h] [-m MODEL] [-u OLLAMA_URL] [-f FRAMEWORK]
 | `-u, --ollama-url` | Ollama API base URL | `http://localhost:11434` |
 | `-f, --framework` | Framework to evaluate against | `nist_800_53` |
 | `-o, --output` | Write full JSON results to a file | — |
+| `--pdf FILE` | Generate a styled PDF report | — |
 | `--json` | Print raw JSON instead of the formatted report | — |
 | `-t, --temperature` | LLM sampling temperature | `0.1` |
 | `--timeout` | Request timeout in seconds | `300` |
@@ -80,6 +81,9 @@ policy-lens [-h] [-m MODEL] [-u OLLAMA_URL] [-f FRAMEWORK]
 ```bash
 # Use a specific model
 policy-lens -m mistral examples/sample_policy.txt
+
+# Generate a PDF report
+policy-lens --pdf report.pdf examples/sample_policy.txt
 
 # Save full results (all three layers) to JSON
 policy-lens -o results.json examples/sample_policy.txt
@@ -135,6 +139,7 @@ policy-lens/
 │   ├── analyzer.py           # Three-layer pipeline orchestration
 │   ├── ollama_client.py      # Async Ollama HTTP client
 │   ├── report.py             # Rich terminal output
+│   ├── pdf_report.py         # PDF report generation
 │   ├── prompts/
 │   │   ├── layer1_extract.py # System prompt: statement extraction
 │   │   ├── layer2_map.py     # System prompt: control family mapping

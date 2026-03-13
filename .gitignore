@@ -14,3 +14,5 @@ env/
 .mypy_cache/
 .ruff_cache/
 *.log
+results.json
+*.pdf

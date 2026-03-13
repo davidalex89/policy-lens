@@ -15,6 +15,7 @@ from rich.live import Live
 from policy_lens import __version__
 from policy_lens.analyzer import AnalysisResult, run_pipeline
 from policy_lens.ollama_client import OllamaConfig, OllamaError
+from policy_lens.pdf_report import generate_pdf
 from policy_lens.report import print_json, print_report
 
 
@@ -60,6 +61,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         dest="json_output",
         help="Print raw JSON output instead of the formatted report.",
+    )
+    p.add_argument(
+        "--pdf",
+        type=Path,
+        default=None,
+        metavar="FILE",
+        help="Generate a PDF report at the given path.",
     )
     p.add_argument(
         "-t", "--temperature",
@@ -154,6 +162,17 @@ def main() -> None:
         print_json(result.to_dict(), console=output_console)
     else:
         print_report(result.evaluation, console=output_console)
+
+    if args.pdf:
+        from policy_lens.analyzer import load_framework
+        fw = load_framework(args.framework)
+        generate_pdf(
+            result.to_dict(),
+            output_path=args.pdf,
+            framework=fw.get("framework", args.framework),
+            model=args.model,
+        )
+        console.print(f"  PDF report written to [bold]{args.pdf}[/]")
 
     if args.output:
         args.output.write_text(json.dumps(result.to_dict(), indent=2))
