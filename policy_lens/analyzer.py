@@ -26,6 +26,40 @@ from policy_lens.prompts import (
 FRAMEWORKS_DIR = Path(__file__).parent / "frameworks"
 
 
+def _fix_evaluation_stats(
+    evaluation: dict[str, Any], families: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Recompute coverage stats from family_scores instead of trusting the LLM's arithmetic."""
+    scores = evaluation.get("family_scores", [])
+    scored_ids = {s["family_id"] for s in scores}
+
+    for fam in families:
+        if fam["id"] not in scored_ids:
+            scores.append({
+                "family_id": fam["id"],
+                "family_name": fam["name"],
+                "score": "none",
+                "mapped_statement_count": 0,
+                "recommendation": f"No policy coverage found for {fam['name']}. "
+                "Consider adding controls addressing this area.",
+            })
+
+    evaluation["family_scores"] = scores
+    total = len(scores)
+    addressed = sum(1 for s in scores if s["score"] == "addressed")
+    partial = sum(1 for s in scores if s["score"] == "partial")
+    none_count = sum(1 for s in scores if s["score"] == "none")
+
+    evaluation["total_families"] = total
+    evaluation["families_addressed"] = addressed
+    evaluation["families_partial"] = partial
+    evaluation["families_none"] = none_count
+    evaluation["overall_coverage_pct"] = (
+        round((addressed + partial) / total * 100) if total > 0 else 0
+    )
+    return evaluation
+
+
 @dataclass
 class AnalysisResult:
     """Container for the full pipeline output."""
@@ -100,6 +134,7 @@ async def run_pipeline(
         EVALUATE_SYSTEM_PROMPT,
         build_evaluate_user_prompt(json.dumps(mappings, indent=2), families_json),
     )
+    evaluation = _fix_evaluation_stats(evaluation, fw["control_families"])
     result.evaluation = evaluation
     if on_layer_complete:
         await on_layer_complete(3, "evaluate", evaluation)

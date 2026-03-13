@@ -723,6 +723,7 @@ async function runAnalysis() {
     evaluation = await ollamaChatJSON(buildEvaluateSystem(frameworkName),
       `Evaluate the following policy-to-control-family mappings and produce a coverage assessment with gap analysis.\n\n--- MAPPINGS ---\n${JSON.stringify(mappings, null, 2)}\n--- END MAPPINGS ---\n\n--- ${frameworkName} CONTROL FAMILIES (full list for gap detection) ---\n${familiesJSON}\n--- END CONTROL FAMILIES ---`
     );
+    evaluation = fixEvaluationStats(evaluation, families);
     setLayer(3, 'done', `${evaluation.overall_coverage_pct}% coverage · ${((performance.now()-t3)/1000).toFixed(1)}s`);
 
   } catch (err) {
@@ -737,6 +738,38 @@ async function runAnalysis() {
   initChat();
   btn.disabled = false;
   document.getElementById('print-btn').style.display = '';
+}
+
+// ─── Fix Coverage Stats ───────────────────────────────────────────────────
+function fixEvaluationStats(evaluation, families) {
+  const scores = evaluation.family_scores || [];
+  const scoredIds = new Set(scores.map(s => s.family_id));
+
+  for (const fam of families) {
+    if (!scoredIds.has(fam.id)) {
+      scores.push({
+        family_id: fam.id,
+        family_name: fam.name,
+        score: "none",
+        mapped_statement_count: 0,
+        recommendation: `No policy coverage found for ${fam.name}. Consider adding controls addressing this area.`
+      });
+    }
+  }
+
+  evaluation.family_scores = scores;
+  const total = scores.length;
+  const addressed = scores.filter(s => s.score === 'addressed').length;
+  const partial = scores.filter(s => s.score === 'partial').length;
+  const none = scores.filter(s => s.score === 'none').length;
+  const pct = total > 0 ? Math.round((addressed + partial) / total * 100) : 0;
+
+  evaluation.total_families = total;
+  evaluation.families_addressed = addressed;
+  evaluation.families_partial = partial;
+  evaluation.families_none = none;
+  evaluation.overall_coverage_pct = pct;
+  return evaluation;
 }
 
 // ─── Render Results ───────────────────────────────────────────────────────
