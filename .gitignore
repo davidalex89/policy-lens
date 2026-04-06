@@ -16,3 +16,11 @@ env/
 *.log
 results.json
 *.pdf
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Source data files (not needed in repo)
+*.xls
+*.xlsx
