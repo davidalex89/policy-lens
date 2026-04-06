@@ -1,0 +1,300 @@
+{
+  "framework": "Adobe Common Controls Framework (CCF) v5",
+  "source": "https://www.adobe.com/trust/compliance/common-controls-framework.html",
+  "description": "An open-source compliance framework that rationalizes ~315 controls across 25 domains, mapping requirements from 20+ industry standards including SOC 2, ISO 27001/27002, PCI DSS v4.0, FedRAMP, HIPAA, NIST CSF, CIS Controls v8, and more.",
+  "control_families": [
+    {
+      "id": "AM",
+      "name": "Asset Management",
+      "description": "Maintain accurate inventories of information systems, applications, and media assets to ensure all assets are tracked, labeled, and reconciled throughout their lifecycle.",
+      "example_controls": [
+        "AM-01 Inventory Management",
+        "AM-02 Inventory Management: Applications",
+        "AM-03 Inventory Reconciliation: ARP Table",
+        "AM-04 Inventory Reconciliation: Logging",
+        "AM-05 Inventory Labels"
+      ]
+    },
+    {
+      "id": "BC",
+      "name": "Business Continuity",
+      "description": "Establish, maintain, and test business continuity and disaster recovery plans to ensure critical services can be restored within defined recovery objectives.",
+      "example_controls": [
+        "BC-01 Business Continuity Plan",
+        "BC-02 Business Continuity Plan: Personal Health Information",
+        "BC-03 Business Continuity Plan: Roles and Responsibilities",
+        "BC-04 Continuity Testing",
+        "BC-05 Business Impact Analysis"
+      ]
+    },
+    {
+      "id": "BM",
+      "name": "Backup Management",
+      "description": "Configure, test, and protect backups of critical data and systems, including alternate storage and telecommunications, to support recovery objectives.",
+      "example_controls": [
+        "BM-01 Backup Configuration",
+        "BM-02 Resilience Testing",
+        "BM-03 Backup Failure Review",
+        "BM-04 Alternate Storage",
+        "BM-05 Alternate Telecommunication"
+      ]
+    },
+    {
+      "id": "CFM",
+      "name": "Configuration Management",
+      "description": "Establish and maintain baseline configuration standards for systems and networks, enforce deny-all defaults, and monitor for unauthorized configuration changes.",
+      "example_controls": [
+        "CFM-01 Baseline Configuration Standard",
+        "CFM-02 Default \"Deny-all\" Settings",
+        "CFM-03 Remote Access: Prohibited Protocols and Commands",
+        "CFM-04 Data Execution Prevention",
+        "CFM-05 Client Run Time Technologies"
+      ]
+    },
+    {
+      "id": "CHM",
+      "name": "Change Management",
+      "description": "Implement a governed workflow for requesting, approving, testing, and communicating changes to systems, code, and infrastructure.",
+      "example_controls": [
+        "CHM-01 Change Management Workflow",
+        "CHM-02 Change Approval",
+        "CHM-03 Segregation of Duties",
+        "CHM-04 Communication of Maintenance and Downtime"
+      ]
+    },
+    {
+      "id": "CMS",
+      "name": "Customer Managed Security",
+      "description": "Provide controls and capabilities that allow customers to manage their own administrative access, authentication, and security monitoring within the service.",
+      "example_controls": [
+        "CMS-01 Customer Administrative Access",
+        "CMS-02 Customer Authentication",
+        "CMS-03 Customer Systems Monitoring",
+        "CMS-04 Customer Security Engagements"
+      ]
+    },
+    {
+      "id": "CRY",
+      "name": "Cryptography",
+      "description": "Manage the full lifecycle of cryptographic keys and enforce encryption of data in transit and at rest using approved algorithms and key management practices.",
+      "example_controls": [
+        "CRY-01 Encryption Key Maintenance",
+        "CRY-02 Encryption Key Distribution",
+        "CRY-03 Encryption Key Storage",
+        "CRY-04 Clear Text Key Management",
+        "CRY-05 Encryption of Data in Transit"
+      ]
+    },
+    {
+      "id": "DM",
+      "name": "Data Management",
+      "description": "Classify, inventory, and govern data throughout its lifecycle, including handling personal information access requests, retention, disposal, and cross-border transfers.",
+      "example_controls": [
+        "DM-01 Data Classification Criteria",
+        "DM-02 Data Inventory",
+        "DM-03 Terms of Service",
+        "DM-04 Personal Information Access Requests",
+        "DM-05 Personal Information Deletion Requests"
+      ]
+    },
+    {
+      "id": "EM",
+      "name": "Entity Management",
+      "description": "Define and maintain the organizational governance structure, including board oversight, audit functions, legal entity management, and strategic operating plans.",
+      "example_controls": [
+        "EM-01 Board of Directors Structure and Purpose",
+        "EM-02 Audit Committee",
+        "EM-03 Organizational Structure",
+        "EM-04 Operating Plans",
+        "EM-05 Cyber Security Insurance"
+      ]
+    },
+    {
+      "id": "IAM",
+      "name": "Identity and Access Management",
+      "description": "Provision, review, and de-provision logical access rights using least-privilege principles, multi-factor authentication, privileged account controls, and centralized identity management.",
+      "example_controls": [
+        "IAM-01 Logical Access Provisioning",
+        "IAM-02 Change of Access Notification",
+        "IAM-03 Logical Access De-provisioning",
+        "IAM-04 Logical Access De-provisioning: Notification",
+        "IAM-05 Logical Access Review"
+      ]
+    },
+    {
+      "id": "IR",
+      "name": "Incident Response",
+      "description": "Establish, test, and execute an incident response plan covering detection, response, containment, external communication, and post-incident review.",
+      "example_controls": [
+        "IR-01 Incident Response Plan",
+        "IR-02 Incident Response Testing",
+        "IR-03 Incident Response",
+        "IR-04 External Communication of Incidents",
+        "IR-05 Incident Reporting Contact Information"
+      ]
+    },
+    {
+      "id": "MDM",
+      "name": "Mobile Device Management",
+      "description": "Enroll, encrypt, and apply configuration management policies to mobile devices, including controls for high-risk travel locations.",
+      "example_controls": [
+        "MDM-01 Mobile Device Enrollment",
+        "MDM-02 Mobile Device Encryption",
+        "MDM-03 Configuration Management: Mobile Devices",
+        "MDM-04 Configuration Management: High Risk Travel Locations"
+      ]
+    },
+    {
+      "id": "NO",
+      "name": "Network Operations",
+      "description": "Design and enforce network segmentation, firewall rules, traffic filtering, and secure remote access to protect the network perimeter and internal segments.",
+      "example_controls": [
+        "NO-01 Network Policy Enforcement Points",
+        "NO-02 Inbound and Outbound Network Traffic: DMZ Requirements",
+        "NO-03 Ingress and Egress Points",
+        "NO-04 Non-disclosure of Routing Information",
+        "NO-05 Dynamic Packet Filtering"
+      ]
+    },
+    {
+      "id": "PR",
+      "name": "People Resources",
+      "description": "Manage the employment lifecycle including background checks, hiring, performance management, disciplinary processes, and secure offboarding.",
+      "example_controls": [
+        "PR-01 Background Checks",
+        "PR-02 Performance Management",
+        "PR-03 Hiring Process",
+        "PR-04 Organization Property Collection",
+        "PR-05 Exit Interviews"
+      ]
+    },
+    {
+      "id": "PRIV",
+      "name": "Privacy",
+      "description": "Implement and maintain a privacy program that governs personal information collection, notice, consent, disclosure, and compliance with applicable privacy regulations.",
+      "example_controls": [
+        "PRIV-01 Privacy Program",
+        "PRIV-02 Privacy Program Review",
+        "PRIV-03 Privacy Readiness Review",
+        "PRIV-04 Privacy Notice",
+        "PRIV-05 Personal Information Notice and Consent: Additional Processing Activities"
+      ]
+    },
+    {
+      "id": "PS",
+      "name": "Proactive Security",
+      "description": "Deploy advanced threat detection and response capabilities including endpoint detection and response (EDR), threat hunting, threat modeling, and adversary intelligence.",
+      "example_controls": [
+        "PS-01 Endpoint Detection and Response",
+        "PS-02 Threat Hunting",
+        "PS-03 Threat Modeling",
+        "PS-04 Adversary Intelligence"
+      ]
+    },
+    {
+      "id": "RM",
+      "name": "Risk Management",
+      "description": "Identify, assess, treat, and continuously monitor risks to the organization's systems and services, including formal risk ratings, self-assessments, and internal audits.",
+      "example_controls": [
+        "RM-01 Service Risk Rating Assignment",
+        "RM-02 Risk Assessment",
+        "RM-03 Risk Assessment: HIPAA Criteria",
+        "RM-04 Continuous Monitoring",
+        "RM-05 Self-Assessments: PCI"
+      ]
+    },
+    {
+      "id": "SDD",
+      "name": "System Design Documentation",
+      "description": "Create and maintain system documentation and whitepapers that describe the architecture, data flows, and security properties of information systems.",
+      "example_controls": [
+        "SDD-01 System Documentation",
+        "SDD-02 Whitepapers"
+      ]
+    },
+    {
+      "id": "SG",
+      "name": "Security Governance",
+      "description": "Establish and maintain the information security program, including policies, standards, exception management, document control, and security steering.",
+      "example_controls": [
+        "SG-01 Policy and Standard Review",
+        "SG-02 Exception Management",
+        "SG-03 Document Control",
+        "SG-04 Information Security Program Content",
+        "SG-05 Procedures"
+      ]
+    },
+    {
+      "id": "SLC",
+      "name": "Service Lifecycle",
+      "description": "Apply security controls across the software development and service delivery lifecycle, including source code management, secrets handling, authorization, and decommissioning.",
+      "example_controls": [
+        "SLC-01 Service Lifecycle Workflow",
+        "SLC-02 Source Code Management",
+        "SLC-03 Secrets in Code",
+        "SLC-04 Project Budget Approval",
+        "SLC-05 Project Scope Change"
+      ]
+    },
+    {
+      "id": "SM",
+      "name": "Systems Monitoring",
+      "description": "Collect, protect, and review audit logs and security events across the environment to support detection, investigation, and compliance reporting.",
+      "example_controls": [
+        "SM-01 Audit Logging",
+        "SM-02 Secure Audit Logging",
+        "SM-03 Audit Logging: Cardholder Data Environment Activity",
+        "SM-04 Audit Logging: Cardholder Data Environment Event Information",
+        "SM-05 Audit Logging: Service Provider Logging Requirements"
+      ]
+    },
+    {
+      "id": "SO",
+      "name": "Site Operations",
+      "description": "Control and monitor physical access to facilities, protect cabling and equipment, manage environmental controls, and conduct regular physical security reviews.",
+      "example_controls": [
+        "SO-01 Secured Facility",
+        "SO-02 Physical Protection and Positioning of Cabling",
+        "SO-03 Global Coordination of Critical Functions: Information Security Safeguards",
+        "SO-04 Provisioning Physical Access",
+        "SO-05 De-provisioning Physical Access"
+      ]
+    },
+    {
+      "id": "TA",
+      "name": "Training and Awareness",
+      "description": "Deliver role-appropriate security training and awareness programs covering general security, phishing, developer secure coding, code of conduct, and payment card security.",
+      "example_controls": [
+        "TA-01 General Security Awareness Training",
+        "TA-02 Code of Conduct Training",
+        "TA-03 Accessibility Training",
+        "TA-04 Phishing Awareness",
+        "TA-05 Developer Security Training"
+      ]
+    },
+    {
+      "id": "TPM",
+      "name": "Third-Party Management",
+      "description": "Assess, contract with, monitor, and offboard third-party vendors and service providers, ensuring they meet the organization's security and privacy requirements.",
+      "example_controls": [
+        "TPM-01 Third-Party Assurance Review",
+        "TPM-02 Vendor Risk Management",
+        "TPM-03 Forensic Investigations",
+        "TPM-04 Privacy Risk Assessment",
+        "TPM-05 Network Access Agreement: Vendors"
+      ]
+    },
+    {
+      "id": "VM",
+      "name": "Vulnerability Management",
+      "description": "Continuously scan, track, and remediate vulnerabilities across the environment, including application penetration testing, patch management, and exploit risk scoring.",
+      "example_controls": [
+        "VM-01 Vulnerability Scans",
+        "VM-02 Vulnerability Scans: Cardholder Data Environment",
+        "VM-03 Vulnerability Scans: Audit Log Review",
+        "VM-04 Vulnerability Scans: Trend Analysis",
+        "VM-05 Approved Scanning Vendor"
+      ]
+    }
+  ]
+}

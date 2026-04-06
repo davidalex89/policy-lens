@@ -48,14 +48,18 @@ Output format — respond ONLY with valid JSON:
 """
 
 
-def build_map_user_prompt(statements_json: str, families_json: str) -> str:
+def build_map_user_prompt(
+    statements_json: str,
+    families_json: str,
+    framework_name: str = "NIST 800-53 Rev. 5",
+) -> str:
     return (
-        "Map each of the following policy statements to NIST 800-53 Rev. 5 "
+        f"Map each of the following policy statements to {framework_name} "
         "control families.\n\n"
         "--- POLICY STATEMENTS ---\n"
         f"{statements_json}\n"
         "--- END POLICY STATEMENTS ---\n\n"
-        "--- NIST 800-53 CONTROL FAMILIES ---\n"
+        f"--- {framework_name.upper()} CONTROL FAMILIES ---\n"
         f"{families_json}\n"
         "--- END CONTROL FAMILIES ---"
     )

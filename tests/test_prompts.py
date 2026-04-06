@@ -3,7 +3,7 @@
 from policy_lens.prompts import (
     EXTRACT_SYSTEM_PROMPT,
     MAP_SYSTEM_PROMPT,
-    EVALUATE_SYSTEM_PROMPT,
+    build_evaluate_system_prompt,
     build_extract_user_prompt,
     build_map_user_prompt,
     build_evaluate_user_prompt,
@@ -19,7 +19,17 @@ def test_map_system_prompt_mentions_control_families():
 
 
 def test_evaluate_system_prompt_mentions_coverage():
-    assert "coverage" in EVALUATE_SYSTEM_PROMPT.lower()
+    assert "coverage" in build_evaluate_system_prompt().lower()
+
+
+def test_evaluate_system_prompt_includes_framework_name():
+    prompt = build_evaluate_system_prompt("CIS Controls v8")
+    assert "CIS Controls v8" in prompt
+
+
+def test_evaluate_system_prompt_default_is_generic():
+    prompt = build_evaluate_system_prompt()
+    assert "NIST" not in prompt
 
 
 def test_build_extract_user_prompt_wraps_text():

@@ -16,8 +16,8 @@ from typing import Any
 from policy_lens.ollama_client import OllamaConfig, chat_json
 from policy_lens.prompts import (
     EXTRACT_SYSTEM_PROMPT,
-    EVALUATE_SYSTEM_PROMPT,
     MAP_SYSTEM_PROMPT,
+    build_evaluate_system_prompt,
     build_extract_user_prompt,
     build_evaluate_user_prompt,
     build_map_user_prompt,
@@ -105,6 +105,7 @@ async def run_pipeline(
         config = OllamaConfig()
 
     fw = load_framework(framework)
+    fw_display_name: str = fw.get("framework", framework)
     families_json = json.dumps(fw["control_families"], indent=2)
     result = AnalysisResult()
 
@@ -122,7 +123,11 @@ async def run_pipeline(
     mappings = await chat_json(
         config,
         MAP_SYSTEM_PROMPT,
-        build_map_user_prompt(json.dumps(statements, indent=2), families_json),
+        build_map_user_prompt(
+            json.dumps(statements, indent=2),
+            families_json,
+            fw_display_name,
+        ),
     )
     result.mappings = mappings
     if on_layer_complete:
@@ -131,8 +136,12 @@ async def run_pipeline(
     # --- Layer 3: Evaluate ---
     evaluation = await chat_json(
         config,
-        EVALUATE_SYSTEM_PROMPT,
-        build_evaluate_user_prompt(json.dumps(mappings, indent=2), families_json),
+        build_evaluate_system_prompt(fw_display_name),
+        build_evaluate_user_prompt(
+            json.dumps(mappings, indent=2),
+            families_json,
+            fw_display_name,
+        ),
     )
     evaluation = _fix_evaluation_stats(evaluation, fw["control_families"])
     result.evaluation = evaluation

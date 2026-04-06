@@ -303,3 +303,220 @@ def _pct_color(pct: Any) -> tuple[int, int, int]:
     if p >= 40:
         return YELLOW
     return RED
+
+
+# ── Comparison PDF ────────────────────────────────────────────────────────────
+
+DELTA_LABELS = {2: "Major Gap", 1: "Gap", 0: "Parity", -1: "Stronger", -2: "Much Stronger"}
+DELTA_COLORS = {2: RED, 1: YELLOW, 0: STEEL, -1: GREEN, -2: GREEN}
+
+
+def generate_comparison_pdf(
+    comparison_dict: dict[str, Any],
+    output_path: str | Path,
+    model: str = "llama3",
+) -> Path:
+    """Build a PDF comparison report and write it to output_path."""
+    from policy_lens.comparison import SCORE_RANK
+
+    output_path = Path(output_path)
+    label_a: str = comparison_dict.get("label_a", "Policy A")
+    label_b: str = comparison_dict.get("label_b", "Policy B")
+    framework: str = comparison_dict.get("framework", "")
+    cov_a: int = comparison_dict.get("coverage_a", 0)
+    cov_b: int = comparison_dict.get("coverage_b", 0)
+    delta: int = comparison_dict.get("coverage_delta", 0)
+    family_comparisons: list[dict] = comparison_dict.get("family_comparisons", [])
+
+    pdf = PolicyReport(framework=framework, model=model)
+    pdf.set_title(f"Policy Comparison — {label_a} vs {label_b}")
+    pdf.set_author("policy-lens")
+
+    # ── Title page ────────────────────────────────────────────────────────
+    pdf.add_page()
+    pdf.ln(40)
+    pdf.set_font("Helvetica", "B", 26)
+    pdf.set_text_color(*NAVY)
+    pdf.cell(0, 14, "Policy Comparison Report", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(2)
+
+    pdf.set_font("Helvetica", "", 13)
+    pdf.set_text_color(*STEEL)
+    pdf.cell(0, 9, f"Framework: {framework}", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 9, f"Model: {model}", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(
+        0, 9,
+        f"Generated: {datetime.now().strftime('%B %d, %Y')}",
+        align="C", new_x="LMARGIN", new_y="NEXT",
+    )
+
+    pdf.ln(14)
+
+    # Side-by-side coverage numbers
+    col = 90
+    _title_score_block(pdf, label_a, cov_a, col, align="R")
+    pdf.set_font("Helvetica", "B", 18)
+    pdf.set_text_color(*STEEL)
+    pdf.cell(10, 20, "vs", align="C")
+    _title_score_block(pdf, label_b, cov_b, col, align="L")
+    pdf.ln(28)
+
+    # Delta line
+    sign = f"+{delta}" if delta > 0 else str(delta)
+    delta_color = RED if delta > 0 else (GREEN if delta < 0 else STEEL)
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.set_text_color(*delta_color)
+    if delta > 0:
+        msg = f"{sign}pp coverage advantage for {label_a}"
+    elif delta < 0:
+        msg = f"{sign}pp coverage advantage for {label_b}"
+    else:
+        msg = "Overall coverage parity"
+    pdf.cell(0, 8, _sanitize(msg), align="C", new_x="LMARGIN", new_y="NEXT")
+
+    # ── Coverage summary stats ────────────────────────────────────────────
+    pdf.add_page()
+    _section_heading(pdf, "Coverage Summary")
+
+    for label, result_key in [(label_a, "result_a"), (label_b, "result_b")]:
+        ev = comparison_dict.get(result_key, {}).get("evaluation", {})
+        pdf.set_font("Helvetica", "B", 11)
+        pdf.set_text_color(*NAVY)
+        pdf.cell(0, 7, _sanitize(label), new_x="LMARGIN", new_y="NEXT")
+        _kv_line(pdf, "Overall Coverage", f"{ev.get('overall_coverage_pct', '?')}%")
+        _kv_line(pdf, "Addressed", str(ev.get("families_addressed", "?")), GREEN)
+        _kv_line(pdf, "Partial",   str(ev.get("families_partial", "?")),   YELLOW)
+        _kv_line(pdf, "Not Covered", str(ev.get("families_none", "?")),    RED)
+        pdf.ln(6)
+
+    # ── Side-by-side comparison table ─────────────────────────────────────
+    _section_heading(pdf, "Control Family Comparison")
+    _comparison_table(pdf, family_comparisons, label_a, label_b)
+
+    # ── Vendor gap detail ──────────────────────────────────────────────────
+    gaps = [f for f in family_comparisons if f.get("delta", 0) > 0]
+    if gaps:
+        pdf.add_page()
+        _section_heading(pdf, f"Vendor Gaps — Where {label_b} Falls Short")
+        _gap_detail_section(pdf, gaps, label_b, is_gap=True)
+
+    # ── Vendor stronger detail ─────────────────────────────────────────────
+    stronger = [f for f in family_comparisons if f.get("delta", 0) < 0]
+    if stronger:
+        if pdf.get_y() > 180:
+            pdf.add_page()
+        else:
+            pdf.ln(8)
+        _section_heading(pdf, f"Vendor Strengths — Where {label_b} Leads")
+        _gap_detail_section(pdf, stronger, label_b, is_gap=False)
+
+    pdf.output(str(output_path))
+    return output_path
+
+
+def _title_score_block(
+    pdf: FPDF, label: str, pct: int, width: int, align: str
+) -> None:
+    pdf.set_font("Helvetica", "B", 36)
+    pdf.set_text_color(*_pct_color(pct))
+    pdf.cell(width, 20, f"{pct}%", align=align)
+    if align == "L":
+        pdf.ln()
+        pdf.set_font("Helvetica", "", 11)
+        pdf.set_text_color(*STEEL)
+        pdf.cell(0, 6, _sanitize(label), new_x="LMARGIN", new_y="NEXT")
+
+
+def _comparison_table(
+    pdf: FPDF,
+    family_comparisons: list[dict],
+    label_a: str,
+    label_b: str,
+) -> None:
+    col_widths = [14, 62, 32, 32, 20]
+    la_short = label_a[:14] if len(label_a) > 14 else label_a
+    lb_short = label_b[:14] if len(label_b) > 14 else label_b
+    headers = ["ID", "Control Family", la_short, lb_short, "Gap"]
+
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_fill_color(*NAVY)
+    pdf.set_text_color(*WHITE)
+    for w, h in zip(col_widths, headers):
+        pdf.cell(w, 7, _sanitize(f" {h}"), fill=True)
+    pdf.ln()
+
+    pdf.set_font("Helvetica", "", 9)
+    for i, fc in enumerate(family_comparisons):
+        bg = LIGHT_GRAY if i % 2 == 0 else WHITE
+        pdf.set_fill_color(*bg)
+        pdf.set_text_color(*NAVY)
+
+        score_a = fc.get("score_a", "none")
+        score_b = fc.get("score_b", "none")
+        delta = fc.get("delta", 0)
+        clamped = max(-2, min(2, delta))
+        gap_label = DELTA_LABELS.get(clamped, str(delta))
+        gap_color = DELTA_COLORS.get(clamped, STEEL)
+
+        pdf.cell(col_widths[0], 6, _sanitize(f" {fc['family_id']}"), fill=True)
+        pdf.cell(col_widths[1], 6, _sanitize(f" {fc['family_name']}"), fill=True)
+
+        pdf.set_text_color(*SCORE_COLORS.get(score_a, NAVY))
+        pdf.cell(col_widths[2], 6, _sanitize(f" {SCORE_LABELS.get(score_a, score_a)}"), fill=True)
+
+        pdf.set_text_color(*SCORE_COLORS.get(score_b, NAVY))
+        pdf.cell(col_widths[3], 6, _sanitize(f" {SCORE_LABELS.get(score_b, score_b)}"), fill=True)
+
+        pdf.set_text_color(*gap_color)
+        pdf.cell(col_widths[4], 6, _sanitize(f" {gap_label}"), fill=True)
+        pdf.ln()
+
+    pdf.ln(4)
+
+
+def _gap_detail_section(
+    pdf: FPDF,
+    families: list[dict],
+    subject_label: str,
+    is_gap: bool,
+) -> None:
+    rec_key = "recommendation_b" if is_gap else "recommendation_a"
+    score_key = "score_b" if is_gap else "score_a"
+    other_score_key = "score_a" if is_gap else "score_b"
+    header_color = RED if is_gap else GREEN
+
+    for fc in families:
+        if pdf.get_y() > 245:
+            pdf.add_page()
+
+        score = fc.get(score_key, "none")
+        other_score = fc.get(other_score_key, "none")
+        color = SCORE_COLORS.get(score, STEEL)
+
+        pdf.set_fill_color(*color)
+        pdf.set_text_color(*WHITE)
+        pdf.set_font("Helvetica", "B", 10)
+        label = SCORE_LABELS.get(score, score)
+        other_label = SCORE_LABELS.get(other_score, other_score)
+        pdf.cell(
+            0, 7,
+            _sanitize(
+                f"  {fc['family_id']} -- {fc['family_name']}"
+                f"    [{subject_label}: {label} / Other: {other_label}]"
+            ),
+            fill=True,
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
+        pdf.ln(2)
+
+        rec = fc.get(rec_key)
+        if rec:
+            pdf.set_font("Helvetica", "B", 9)
+            pdf.set_text_color(*header_color)
+            pdf.cell(0, 5, "Recommendation:", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("Helvetica", "", 9)
+            pdf.set_text_color(*NAVY)
+            pdf.multi_cell(0, 5, _sanitize(f"  {rec}"))
+
+        pdf.ln(4)
