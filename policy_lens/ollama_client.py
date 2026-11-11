@@ -77,7 +77,7 @@ async def chat_json(
     Uses Ollama's native format:"json" to constrain output, with retry
     and fallback extraction if needed.
     """
-    last_err = None
+    last_err: OllamaError | None = None
     for attempt in range(MAX_RETRIES + 1):
         raw = await chat(config, system_prompt, user_prompt, force_json=True)
         try:
@@ -86,7 +86,9 @@ async def chat_json(
             last_err = exc
             if attempt < MAX_RETRIES:
                 continue
-    raise last_err  # type: ignore[misc]
+    # The loop always runs at least once, so last_err is set here; the fallback
+    # keeps that true if MAX_RETRIES is ever set below zero.
+    raise last_err or OllamaError("chat_json made no attempts")
 
 
 def _extract_json(text: str) -> dict:

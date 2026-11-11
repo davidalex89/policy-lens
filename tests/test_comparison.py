@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from policy_lens.analyzer import AnalysisResult
 from policy_lens.comparison import (
     SCORE_RANK,
